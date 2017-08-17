@@ -1,0 +1,48 @@
+<div data-pv="{{pv_name}}" class="widget_wrap" style="
+  top: {{y}}px;
+  left: {{x}}px;
+  width: {{width}}px;
+  height: {{height}}px;">
+
+  {% if border_width > 0 and border_style != 0 %}
+  <style scoped>
+    .border{{unique_id}}_0 {
+      padding: {{max(0, 2-border_width)}}px;
+      border-width: {{border_width}}px;
+      border-style: {{ ['solid', 'solid', 'groove', 'ridge', 'groove', 'ridge', 'inset', 'outset', 'dotted', 'dashed', 'dashed', 'dashed', 'solid', 'solid', 'solid', 'hidden' ][border_style] }};
+      {% if border_style == 0 %}
+      border-color: transparent;
+      {% else %}
+      border-color: rgb({{border_color.color.red}},{{border_color.color.green}},{{border_color.color.blue}});
+      {% end %}
+    }
+    .border{{unique_id}}_1 {
+      padding: {{max(0, border_width-2)}}px;
+    }
+    .border{{unique_id}}_2 {
+      padding: {{max(0, border_width-2)}}px;
+    }
+    .border{{unique_id}}_3 {
+      padding: {{max(0, border_width-2)}}px;
+    }
+  </style>
+  {% end %}
+
+  {% if border_alarm_sensitive %}
+  <div class="disconnected" data-map="js: elementSetVisible(element, %alarm.severity%==4)"></div>
+  {% end %}
+
+  <div data-id="content" class="widget_body border{{unique_id}}_0"
+    data-type="{{widget_type}}" data-showunits="{{show_units}}" data-precision="{{precision}}"
+    data-map="text: %value%; title: {{tooltip}}; {% if border_alarm_sensitive %}css: widget_body border_%alarm.severity% border{{unique_id}}_%alarm.severity%{% end %}"
+    style="width:  calc(100% - {{max(4, 2*border_width if border_style!=0 else 0)}}px);
+           height: calc(100% - {{max(4, 2*border_width if border_style!=0 else 0)}}px);
+           text-align: {% if int(horizontal_alignment)==0 %}left{% elif int(horizontal_alignment)==1 %}center{% else %}right{% end %};
+           vertical-align: {% if int(vertical_alignment)==0 %}top{% elif int(vertical_alignment)==1 %}middle{% else %}bottom{% end %};
+           background-color: rgb({{background_color.color.red}},{{background_color.color.green}},{{background_color.color.blue}});
+           {% if not wrap_words %}white-space: nowrap;{% end %}
+          ">
+    {{text}}
+  </div>
+
+</div>

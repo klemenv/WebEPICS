@@ -1,0 +1,99 @@
+<div data-pv="{{pv_name}}" class="widget_wrap" style="
+  top: {{y}}px;
+  left: {{x}}px;
+  width: {{width}}px;
+  height: {{height}}px;">
+
+  {% if border_width > 0 and border_style != 0 %}
+  <style scoped>
+    .border{{unique_id}}_0 {
+      padding: {{max(0, 2-border_width)}}px;
+      border-width: {{border_width}}px;
+      border-style: {{ ['solid', 'solid', 'groove', 'ridge', 'groove', 'ridge', 'inset', 'outset', 'dotted', 'dashed', 'dashed', 'dashed', 'solid', 'solid', 'solid', 'hidden' ][border_style] }};
+      {% if border_style == 0 %}
+      border-color: transparent;
+      {% else %}
+      border-color: rgb({{border_color.color.red}},{{border_color.color.green}},{{border_color.color.blue}});
+      {% end %}
+    }
+    .border{{unique_id}}_1 {
+      padding: {{max(0, border_width-2)}}px;
+    }
+    .border{{unique_id}}_2 {
+      padding: {{max(0, border_width-2)}}px;
+    }
+    .border{{unique_id}}_3 {
+      padding: {{max(0, border_width-2)}}px;
+    }
+  </style>
+  {% end %}
+
+  {% if border_alarm_sensitive %}
+  <div class="disconnected" data-map="js: elementSetVisible(element, %alarm.severity%==4)"></div>
+  {% end %}
+
+  <div data-id="border"
+    {% if border_alarm_sensitive %}
+    data-map="css: widget_body border_%alarm.severity% border{{unique_id}}_%alarm.severity%"
+    style="width: calc(100% - {{max(4, 2*border_width if border_style!=0 else 0)}}px);
+           height: calc(100% - {{max(4, 2*border_width if border_style!=0 else 0)}}px);
+           display: inline-block;"
+    {% else %}
+    class="border{{unique_id}}_0"
+    style="width: calc(100% - {{2*border_width if border_style!=0 else 0}}px);
+           height: calc(100% - {{2*border_width if border_style!=0 else 0}}px);
+           display: inline-block;"
+    {% end %}
+    >
+
+    <button type="button" class="button"
+      data-map="title: {{tooltip}}"
+      {% if len(actions.action) > 0 %}
+        data-action="
+        {% for action in actions.action %}
+          {% if action.type in "OPEN_WEBPAGE" %}
+            window.location.href = '{{action.hyperlink}}';
+            {% break %}
+          {% elif action.type in "OPEN_FILE" %}
+            window.location = '{{action.path}}';
+            {% break %}
+          {% elif action.type in "OPEN_DISPLAY" %}
+            {% if action.mode == 0 %}
+              window.location = '{{action.path}}';
+            {% elif action.mode in [1,8] %}
+              window.open('{{action.path}}', '_blank');
+            {% end %}
+            {% break %}
+          {% elif action.type in "WRITE_PV" %}
+            setPvValue('{{action.pv_name}}', '{{action.value}}');
+          {% end %}
+        {% end %}
+        "
+      {% end %}
+      style="width: 100%;
+             height: 100%;
+             top: {{max(2 if border_alarm_sensitive else 0, border_width if border_style!=0 else 0)}}px;
+             left: {{max(2 if border_alarm_sensitive else 0, border_width if border_style!=0 else 0)}}px;
+             {% if style == 0 %}
+             background-color: rgb({{background_color.color.red}},{{background_color.color.green}},{{background_color.color.blue}});
+             {% end %}
+            ">
+      {{text}}
+    </button>
+
+    <!--
+    Actions:
+    {% if "action" in actions %}
+      {% for action in actions.action %}
+        {% if action.type == "OPEN_DISPLAY" %}
+          Open: {{action.path}}
+        {% elif action.type == "WRITE_PV" %}
+          Write PV: {{action.pv_name}}={{action.value}}
+        {% end %}
+      {% end %}
+    {% end %}
+    //-->
+
+  </div>
+
+</div>

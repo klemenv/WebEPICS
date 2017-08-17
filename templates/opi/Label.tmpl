@@ -1,0 +1,21 @@
+<div class="widget_wrap" style="
+  top: {{y}}px;
+  left: {{x}}px;
+  width: {{width}}px;
+  height: {{height}}px;">
+
+  <div class="widget_body" data-id="content" data-type="{{widget_type}}"
+    data-map="title: {{tooltip}}"
+    style="border-width: {{border_width}}px;
+           border-style: {{ ['none', 'solid', 'groove', 'ridge', 'groove', 'ridge', 'inset', 'outset', 'dotted', 'dashed', 'dashed', 'dashed', 'solid', 'solid', 'solid', 'hidden' ][int(border_style)] }};
+           border-color: rgb({{border_color.color.red}},{{border_color.color.green}},{{border_color.color.blue}});
+           width: calc(100% - {{4 + (int(border_width) if int(border_style) else 0)}}px);
+           height: calc(100% - {{4 + (int(border_width) if int(border_style) else 0)}}px);
+           text-align: {% if int(horizontal_alignment)==0 %}left{% elif int(horizontal_alignment)==1 %}center{% else %}right{% end %};
+           vertical-align: {% if int(vertical_alignment)==0 %}top{% elif int(vertical_alignment)==1 %}middle{% else %}bottom{% end %};
+           background-color: rgb({{background_color.color.red}},{{background_color.color.green}},{{background_color.color.blue}});
+           {% if not wrap_words %}white-space: nowrap;{% end %}
+          ">
+    <span>{{text}}</span>
+  </div>
+</div>

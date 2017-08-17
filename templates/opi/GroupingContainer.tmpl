@@ -1,0 +1,21 @@
+<div class="widget_wrap groupcontainer" style="
+  top: {{y}}px;
+  left: {{x}}px;
+  width: {{width - 10}}px;
+  height: {{height - 10}}px;">
+
+  <div class="groupcontainertitle"
+    style="background-color: rgb({{background_color.color.red}},{{background_color.color.green}},{{background_color.color.blue}});
+          ">
+  {{name}}
+  </div>
+
+  <div id="widget_body" 
+    style="position: absolute;
+           top: 10px;
+           left: 10px;
+           background-color: rgb({{background_color.color.red}},{{background_color.color.green}},{{background_color.color.blue}});
+          ">
+  {% raw body %}
+  </div>
+</div>
