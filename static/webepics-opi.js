@@ -69,7 +69,7 @@ $(document).ready(function() {
     }
 
     /* Return selected attribute value from response message. */
-    function getValue(attr, msg) {
+    function getAttrValue(attr, msg) {
         var value = msg;
         var fields = attr.split(".");
         for (i=0; i<fields.length; i++) {
@@ -131,6 +131,62 @@ $(document).ready(function() {
         }
     }
 
+    /**
+     * Simplified sprintf-like function.
+     * Only takes one argument. Limited specifiers: d, f, x
+     */
+    function sprintf(fmt, value) {
+        if (typeof(value) === "number") {
+            var re = /%\.?([0-9]*)([dfx])(.*)/, match;
+            if (match = re.exec(fmt)) {
+                if (match[2] == "d") {
+                    return Math.round(value).toString() + match[3];
+                } else if (match[2] == "f") {
+                    var precision = parseInt(match[1], 10);
+                    if (isNaN(precision)) {
+                        precision = 3;
+                    }
+                    precision = Math.min(21, Math.max(1, precision+1));
+                    return value.toPrecision(precision).toString() + match[3];
+                } else if (match[2] == "x") {
+                    // TODO: ignored spacing specification
+                    return "0x" + value.toString(16) + match[3];
+                }
+            }
+            return value.toString();
+        }
+        return value;
+    }
+
+    /**
+     * Re-format value into a string according to requested rules.
+     *
+     * Numerical values take into account precision and unit. Strings are
+     * returned as is.
+     */
+    function valueFormat(value, element, debug=false) {
+        switch (typeof(value)) {
+            case "number":
+                if (debug) console.log("value: " + value);
+
+                var fmt = "%f";
+                if ("format" in element.data()) {
+                    fmt = element.data("format");
+                }
+                if (debug) console.log("fmt: " + fmt);
+                if ("unit" in element.data()) {
+                    if (debug) console.log("unit: " + element.data("unit"));
+                    fmt += " " + element.data("unit");
+                }
+                ret = sprintf(fmt, value);
+                if (debug) console.log("output: " + ret);
+                return ret;
+            case "string":
+            default:
+                return value;
+        }
+    }
+
     function elementProcessMapping(el, rsp) {
         var re = /%([^%]*)%/, match;
         var mappings = el.data("map").split(";");
@@ -142,11 +198,13 @@ $(document).ready(function() {
 
             while (match = re.exec(value)) {
                 try {
-                    var val = getValue(match[1], rsp);
-                    if (action == "js" && typeof val === "string") {
-                        value = value.replace(match[0], "\"" + val.toString() + "\"");
+                    var val = getAttrValue(match[1], rsp);
+                    if (action == "js" && typeof(val) === "string") {
+                        value = value.replace(match[0], "\"" + val + "\"");
+                    } else if (match[1] == "value") {
+                        value = value.replace(match[0], valueFormat(val, el)+"");
                     } else {
-                        value = value.replace(match[0], val.toString());
+                        value = value.replace(match[0], val+"");
                     }
                 } catch (e) {
                     value = value.replace(match[0], "undefined");
@@ -162,6 +220,16 @@ $(document).ready(function() {
                     break;
                 case "title":
                     el.prop("title", value);
+                    break;
+                case "format":
+                    if (value !== "undefined") {
+                        el.data("format", value);
+                    }
+                    break;
+                case "units":
+                    if (value !== "undefined") {
+                        el.data("unit", value);
+                    }
                     break;
                 case "js":
                     var element = el;

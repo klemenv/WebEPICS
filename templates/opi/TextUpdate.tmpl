@@ -32,9 +32,19 @@
   <div class="disconnected" data-map="js: elementSetVisible(element, %alarm.severity%==4)"></div>
   {% end %}
 
-  <div data-id="content" class="widget_body border{{unique_id}}_0"
-    data-type="{{widget_type}}" data-showunits="{{show_units}}" data-precision="{{precision}}"
-    data-map="text: %value%; title: {{tooltip}}; {% if border_alarm_sensitive %}css: widget_body border_%alarm.severity% border{{unique_id}}_%alarm.severity%{% end %}"
+  <div data-id="content" class="widget_body border{{unique_id}}_0" data-type="{{widget_type}}"
+    {% if not precision_from_pv %}data-format=
+      {% if format_type == 3 %}"%4x"
+      {% elif format_type == 4 %}"%8x"
+      {% else %}"%.{{precision}}f"
+      {% end %}
+    {% end %}
+    data-map="{% if border_alarm_sensitive %}css: widget_body border_%alarm.severity% border{{unique_id}}_%alarm.severity%;{% end %}
+              {% if precision_from_pv %}format: %display.format%;{% end %}
+              {% if show_units %}units: %display.units%;{% end %}
+              text: %value%;
+              title: {{tooltip}};
+             "
     style="width:  calc(100% - {{max(4, 2*border_width if border_style!=0 else 0)}}px);
            height: calc(100% - {{max(4, 2*border_width if border_style!=0 else 0)}}px);
            text-align: {% if int(horizontal_alignment)==0 %}left{% elif int(horizontal_alignment)==1 %}center{% else %}right{% end %};

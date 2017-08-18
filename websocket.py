@@ -85,7 +85,7 @@ class PV():
         ch = pvaccess.Channel(self._pvname, self._protocol)
         ch.put(value)
 
-    def sendToClients(self, update, clientList=[]):
+    def sendToClients(self, message, clientList=[]):
         """ Send response message to clients in list or all subscribed clients if list is empty.
 
         When a stalled or disconnected client is detected, it's automatically
@@ -99,7 +99,7 @@ class PV():
         closedClients = []
         for client in clientList:
             try:
-                client.onPvUpdate(self._pvurl, update)
+                client.onPvUpdate(self._pvurl, message)
             except tornado.websocket.WebSocketClosedError:
                 log.debug("Removing disconnected client")
                 closedClients.append(client)
@@ -221,8 +221,9 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
             elif message["req"] == "pv_get":
                 self._reqGet(message)
             elif message["req"] == "pv_put":
-                print "Handling put request"
                 self._reqPut(message)
+            else:
+                log.warn("Unknown request: {0}".format(message["req"]))
         except Exception, e:
             log.error("Request failed: {0}".format(str(e)))
 
