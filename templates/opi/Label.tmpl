@@ -7,13 +7,13 @@
   <div class="widget_body" data-id="content" data-type="{{widget_type}}"
     data-map="title: {{tooltip}}"
     style="border-width: {{border_width}}px;
-           border-style: {{ ['none', 'solid', 'groove', 'ridge', 'groove', 'ridge', 'inset', 'outset', 'dotted', 'dashed', 'dashed', 'dashed', 'solid', 'solid', 'solid', 'hidden' ][int(border_style)] }};
-           border-color: rgb({{border_color.color.red}},{{border_color.color.green}},{{border_color.color.blue}});
-           width: calc(100% - {{4 + (int(border_width) if int(border_style) else 0)}}px);
-           height: calc(100% - {{4 + (int(border_width) if int(border_style) else 0)}}px);
-           text-align: {% if int(horizontal_alignment)==0 %}left{% elif int(horizontal_alignment)==1 %}center{% else %}right{% end %};
-           vertical-align: {% if int(vertical_alignment)==0 %}top{% elif int(vertical_alignment)==1 %}middle{% else %}bottom{% end %};
-           background-color: rgb({{background_color.color.red}},{{background_color.color.green}},{{background_color.color.blue}});
+           border-style: {{border_style}};
+           border-color: rgb({{border_color.red}},{{border_color.green}},{{border_color.blue}});
+           width: calc(100% - {{4 + (border_width if border_style_index!=0 else 0)}}px);
+           height: calc(100% - {{4 + (border_width if border_style_index!=0 else 0)}}px);
+           text-align: {{horizontal_alignment}};
+           vertical-align: {{vertical_alignment}};
+           background-color: rgb({{background_color.red}},{{background_color.green}},{{background_color.blue}});
            {% if not wrap_words %}white-space: nowrap;{% end %}
           ">
     <span>{{text}}</span>

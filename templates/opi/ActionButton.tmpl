@@ -9,12 +9,14 @@
     .border{{unique_id}}_0 {
       padding: {{max(0, 2-border_width)}}px;
       border-width: {{border_width}}px;
-      border-style: {{ ['solid', 'solid', 'groove', 'ridge', 'groove', 'ridge', 'inset', 'outset', 'dotted', 'dashed', 'dashed', 'dashed', 'solid', 'solid', 'solid', 'hidden' ][border_style] }};
-      {% if border_style == 0 %}
+      {% if border_style_index == 0 %}
+      border-style: {{border_style}};
       border-color: transparent;
       {% else %}
-      border-color: rgb({{border_color.color.red}},{{border_color.color.green}},{{border_color.color.blue}});
+      border-style: solid;
+      border-color: rgb({{border_color.red}},{{border_color.green}},{{border_color.blue}});
       {% end %}
+
     }
     .border{{unique_id}}_1 {
       padding: {{max(0, border_width-2)}}px;
@@ -35,32 +37,29 @@
   <div data-id="border"
     {% if border_alarm_sensitive %}
     data-map="css: widget_body border_%alarm.severity% border{{unique_id}}_%alarm.severity%"
-    style="width: calc(100% - {{max(4, 2*border_width if border_style!=0 else 0)}}px);
-           height: calc(100% - {{max(4, 2*border_width if border_style!=0 else 0)}}px);
+    style="width: calc(100% - {{max(4, 2*border_width if border_style_index!=0 else 0)}}px);
+           height: calc(100% - {{max(4, 2*border_width if border_style_index!=0 else 0)}}px);
            display: inline-block;"
     {% else %}
     class="border{{unique_id}}_0"
-    style="width: calc(100% - {{2*border_width if border_style!=0 else 0}}px);
-           height: calc(100% - {{2*border_width if border_style!=0 else 0}}px);
+    style="width: calc(100% - {{2*border_width if border_style_index!=0 else 0}}px);
+           height: calc(100% - {{2*border_width if border_style_index!=0 else 0}}px);
            display: inline-block;"
     {% end %}
     >
 
     <button type="button" class="button"
       data-map="title: {{tooltip}}"
-      {% if len(actions.action) > 0 %}
+      {% if len(actions) > 0 %}
         data-action="
-        {% for action in actions.action %}
-          {% if action.type in "OPEN_WEBPAGE" %}
-            window.location.href = '{{action.hyperlink}}';
-            {% break %}
-          {% elif action.type in "OPEN_FILE" %}
-            window.location = '{{action.path}}';
+        {% for action in actions %}
+          {% if action.type in [ "OPEN_WEBPAGE", "OPEN_FILE" ] %}
+            window.location.href = '{{action.path}}';
             {% break %}
           {% elif action.type in "OPEN_DISPLAY" %}
-            {% if action.mode == 0 %}
+            {% if action.mode == "replace" %}
               window.location = '{{action.path}}';
-            {% elif action.mode in [1,8] %}
+            {% else %}
               window.open('{{action.path}}', '_blank');
             {% end %}
             {% break %}
@@ -72,10 +71,10 @@
       {% end %}
       style="width: 100%;
              height: 100%;
-             top: {{max(2 if border_alarm_sensitive else 0, border_width if border_style!=0 else 0)}}px;
-             left: {{max(2 if border_alarm_sensitive else 0, border_width if border_style!=0 else 0)}}px;
+             top: {{max(2 if border_alarm_sensitive else 0, border_width if border_style_index!=0 else 0)}}px;
+             left: {{max(2 if border_alarm_sensitive else 0, border_width if border_style_index!=0 else 0)}}px;
              {% if style == 0 %}
-             background-color: rgb({{background_color.color.red}},{{background_color.color.green}},{{background_color.color.blue}});
+             background-color: rgb({{background_color.red}},{{background_color.green}},{{background_color.blue}});
              {% end %}
             ">
       {{text}}
@@ -83,13 +82,11 @@
 
     <!--
     Actions:
-    {% if "action" in actions %}
-      {% for action in actions.action %}
-        {% if action.type == "OPEN_DISPLAY" %}
-          Open: {{action.path}}
-        {% elif action.type == "WRITE_PV" %}
-          Write PV: {{action.pv_name}}={{action.value}}
-        {% end %}
+    {% for action in actions %}
+      {% if action.type == "OPEN_DISPLAY" %}
+        Open: {{action.path}}
+      {% elif action.type == "WRITE_PV" %}
+        Write PV: {{action.pv_name}}={{action.value}}
       {% end %}
     {% end %}
     //-->

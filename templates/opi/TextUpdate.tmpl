@@ -9,11 +9,12 @@
     .border{{unique_id}}_0 {
       padding: {{max(0, 2-border_width)}}px;
       border-width: {{border_width}}px;
-      border-style: {{ ['solid', 'solid', 'groove', 'ridge', 'groove', 'ridge', 'inset', 'outset', 'dotted', 'dashed', 'dashed', 'dashed', 'solid', 'solid', 'solid', 'hidden' ][border_style] }};
-      {% if border_style == 0 %}
+      {% if border_style_index == 0 %}
+      border-style: {{border_style}};
       border-color: transparent;
       {% else %}
-      border-color: rgb({{border_color.color.red}},{{border_color.color.green}},{{border_color.color.blue}});
+      border-style: solid;
+      border-color: rgb({{border_color.red}},{{border_color.green}},{{border_color.blue}});
       {% end %}
     }
     .border{{unique_id}}_1 {
@@ -33,23 +34,18 @@
   {% end %}
 
   <div data-id="content" class="widget_body border{{unique_id}}_0" data-type="{{widget_type}}"
-    {% if not precision_from_pv %}data-format=
-      {% if format_type == 3 %}"%4x"
-      {% elif format_type == 4 %}"%8x"
-      {% else %}"%.{{precision}}f"
-      {% end %}
-    {% end %}
+    {% if value_format is not None %}data-format={{value_format}}{% end %}
     data-map="{% if border_alarm_sensitive %}css: widget_body border_%alarm.severity% border{{unique_id}}_%alarm.severity%;{% end %}
               {% if precision_from_pv %}format: %display.format%;{% end %}
               {% if show_units %}units: %display.units%;{% end %}
               text: %value%;
               title: {{tooltip}};
              "
-    style="width:  calc(100% - {{max(4, 2*border_width if border_style!=0 else 0)}}px);
-           height: calc(100% - {{max(4, 2*border_width if border_style!=0 else 0)}}px);
-           text-align: {% if int(horizontal_alignment)==0 %}left{% elif int(horizontal_alignment)==1 %}center{% else %}right{% end %};
-           vertical-align: {% if int(vertical_alignment)==0 %}top{% elif int(vertical_alignment)==1 %}middle{% else %}bottom{% end %};
-           background-color: rgb({{background_color.color.red}},{{background_color.color.green}},{{background_color.color.blue}});
+    style="width:  calc(100% - {{max(4, 2*border_width if border_style_index!=0 else 0)}}px);
+           height: calc(100% - {{max(4, 2*border_width if border_style_index!=0 else 0)}}px);
+           text-align: {{horizontal_alignment}};
+           vertical-align: {{vertical_alignment}};
+           background-color: rgb({{background_color.red}},{{background_color.green}},{{background_color.blue}});
            {% if not wrap_words %}white-space: nowrap;{% end %}
           ">
     {{text}}

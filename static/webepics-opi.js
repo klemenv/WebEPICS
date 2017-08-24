@@ -139,18 +139,27 @@ $(document).ready(function() {
         if (typeof(value) === "number") {
             var re = /%\.?([0-9]*)([dfx])(.*)/, match;
             if (match = re.exec(fmt)) {
-                if (match[2] == "d") {
-                    return Math.round(value).toString() + match[3];
-                } else if (match[2] == "f") {
-                    var precision = parseInt(match[1], 10);
-                    if (isNaN(precision)) {
-                        precision = 3;
-                    }
+                var format = match[2];
+                var suffix = match[3];
+                var precision = parseInt(match[1], 10);
+                if (isNaN(precision)) {
+                    precision = 3;
+                } else {
                     precision = Math.min(21, Math.max(1, precision+1));
-                    return value.toPrecision(precision).toString() + match[3];
-                } else if (match[2] == "x") {
-                    // TODO: ignored spacing specification
-                    return "0x" + value.toString(16) + match[3];
+                }
+
+                if (format == "b" || format == "s") {
+                    format = (Number.isInteger(value) ? "d" : "f");
+                }
+
+                switch (format) {
+                    case "d":
+                        return Math.round(value).toString() + suffix;
+                    case "f":
+                        return value.toPrecision(precision).toString() + suffix;
+                    case "x":
+                        // TODO: ignored spacing specification
+                        return "0x" + value.toString(16) + suffix;
                 }
             }
             return value.toString();
