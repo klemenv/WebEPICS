@@ -132,19 +132,6 @@ class Converter:
 
         return html
 
-#    def _trans2StateEnum(self, replacements, macros):
-#        """ Turn 2-state LED into multi-state with only two states. """
-#        if replacements["widget_type"] == "LED":
-#            if "on_color" in replacements and "off_color" in replacements:
-#                replacements["state_count"] = 2
-#                replacements["state_color_0"] = replacements["off_color"]
-#                replacements["state_label_0"] = replacements["off_label"]
-#                replacements["state_value_0"] = 0
-#                replacements["state_color_1"] = replacements["on_color"]
-#                replacements["state_label_1"] = replacements["on_label"]
-#                replacements["state_value_1"] = 1
-#        return replacements
-
 
 
 ##############################################################################
@@ -505,3 +492,102 @@ class GroupingContainer(Widget):
     tooltip = xom.String(default="")
     visible = xom.Boolean(default=True)
     widgets = WidgetList(tagname="widget", default=[])
+
+class LED(Widget):
+    background_color = Color()
+    bit = xom.Integer(default=0)
+    border_alarm_sensitive = xom.Boolean(default=False)
+    border_color = Color()
+    border_style = xom.Enum(BORDER_STYLES)
+    border_style_index = xom.Integer(tagname="border_style", default=0)
+    border_width = xom.Integer(default=0)
+    data_type = xom.Enum(["bit", "enum"])
+    enabled = xom.Boolean(default=True)
+    #font
+    foreground_color = Color()
+    pv_name = xom.String(default="")
+    pv_value = xom.String(default="")
+    show_boolean_label = xom.Boolean(default=False)
+    square_led = xom.Boolean(default=False)
+    state_count = xom.Integer(default=2)
+    tooltip = xom.String(default="")
+    visible = xom.Boolean(default=True)
+
+    def parse(self, node):
+        """ Turn LED XML nodes into a list of states.
+
+        Handles multi-LED and 2-LED cases. Dynamically adds state_count and
+        states fields to this Model. states field is sorted list of Models
+        containing sub-fields value,color,label for each state.
+        """
+        super(LED, self).parse(node)
+
+        class LEDState(xom.Model):
+            value = xom.Number()
+            label = xom.String(default="")
+            color = Color()
+
+            def parse(self, node):
+                pass
+
+        # Read number of total states, default to 2 for off/on LED
+        count = xom.Integer(tagname="state_count", default=2)
+        child = node.firstChild
+        while child is not None:
+            if child.nodeName == "state_count":
+                count.parse(child)
+                break
+            child = child.nextSibling
+        self.setField("state_count", count.get(), "state_count")
+
+        # Create a list of all state models
+        states = []
+        for i in range(self.state_count):
+            state = LEDState()
+            states.append(state)
+
+        # Parse nodes describing states - handles 2 state LED as well as n-state LED
+        child = node.firstChild
+        while child is not None:
+            try:
+                check, fieldname, i = child.nodeName.split("_")
+                i = int(i)
+                if check == "state":
+                    if fieldname == "color":
+                        states[i].color.setTagName(child.nodeName, True)
+                        states[i].color.parse(child)
+                    elif fieldname == "label":
+                        states[i].label.setTagName(child.nodeName, True)
+                        states[i].label.parse(child)
+                    elif fieldname == "value":
+                        states[i].value.setTagName(child.nodeName, True)
+                        states[i].value.parse(child)
+            except:
+                if child.nodeName == "off_color":
+                    states[0].color.setTagName(child.nodeName, True)
+                    states[0].color.parse(child)
+                    states[0].value.setDefault(0)
+                elif child.nodeName == "off_label":
+                    states[0].label.setTagName(child.nodeName, True)
+                    states[0].label.parse(child)
+                    states[0].value.setDefault(0)
+                elif child.nodeName == "on_color":
+                    states[1].color.setTagName(child.nodeName, True)
+                    states[1].color.parse(child)
+                    states[1].value.setDefault(1)
+                elif child.nodeName == "on_label":
+                    states[1].label.setTagName(child.nodeName, True)
+                    states[1].label.parse(child)
+                    states[1].value.setDefault(1)
+
+            child = child.nextSibling
+
+        # Transform fields into Python objects
+        for i in range(self.state_count):
+            states[i].setField("label", states[i].label.get(), "label")
+            states[i].setField("value", states[i].value.get(), "value")
+
+        # Assign 'states' field
+        self.setField("states", states, "states")
+        return True
+

@@ -10,11 +10,12 @@
     .border{{unique_id}}_0 {
       padding: {{max(0, 2-border_width)}}px;
       border-width: {{border_width}}px;
-      border-style: {{ ['solid', 'solid', 'groove', 'ridge', 'groove', 'ridge', 'inset', 'outset', 'dotted', 'dashed', 'dashed', 'dashed', 'solid', 'solid', 'solid', 'hidden' ][border_style] }};
-      {% if border_style == 0 %}
+      {% if border_style_index == 0 %}
+      border-style: {{border_style}};
       border-color: transparent;
       {% else %}
-      border-color: rgb({{border_color.color.red}},{{border_color.color.green}},{{border_color.color.blue}});
+      border-style: solid;
+      border-color: rgb({{border_color.red}},{{border_color.green}},{{border_color.blue}});
       {% end %}
     }
     .border{{unique_id}}_1 {
@@ -36,29 +37,29 @@
   <div data-id="border"
     {% if border_alarm_sensitive %}
     data-map="css: border_%alarm.severity% border{{unique_id}}_%alarm.severity%"
-    style="width: calc(100% - {{max(4, 2*border_width if border_style!=0 else 0)}}px);
-           height: calc(100% - {{max(4, 2*border_width if border_style!=0 else 0)}}px);
+    style="width: calc(100% - {{max(4, 2*border_width if border_style_index!=0 else 0)}}px);
+           height: calc(100% - {{max(4, 2*border_width if border_style_index!=0 else 0)}}px);
            display: inline-block;"
     {% else %}
     class="border{{unique_id}}_0"
-    style="width: calc(100% - {{2*border_width if border_style!=0 else 0}}px);
-           height: calc(100% - {{2*border_width if border_style!=0 else 0}}px);
+    style="width: calc(100% - {{2*border_width if border_style_index!=0 else 0}}px);
+           height: calc(100% - {{2*border_width if border_style_index!=0 else 0}}px);
            display: inline-block;"
     {% end %}
     >
 
-    {% for state_color,state_label,state_value in zip([eval("state_color_" + str(i)) for i in range(state_count)],[eval("state_label_" + str(i)) for i in range(state_count)],[eval("state_value_" + str(i)) for i in range(state_count)]) %}
+    {% for state in states %}
     <div data-id="content" class="widget_body" data-type="{{widget_type}}"
-      data-map="js: elementSetVisible(element, [%value%, %valueEnum.index%].includes({{state_value}})); title: {{tooltip}}"
+      data-map="js: elementSetVisible(element, [%value%, %valueEnum.index%].includes({{state.value}})); title: {{tooltip}}"
       style="width: calc(100%);
              height: calc(100%);
              top: {{max(2 if border_alarm_sensitive else 0, border_width if border_style!=0 else 0)}}px;
              left: {{max(2 if border_alarm_sensitive else 0, border_width if border_style!=0 else 0)}}px;
-             background-color: rgb({{state_color.color.red}},{{state_color.color.green}},{{state_color.color.blue}});
+             background-color: rgb({{state.color.red}},{{state.color.green}},{{state.color.blue}});
              white-space: nowrap;
              {% if not square_led %}border-radius: 50%{% end %}
             ">
-        {% if show_boolean_label %}{{state_label}}{% end %}
+        {% if show_boolean_label %}{{state.label}}{% end %}
     </div>
     {% end %}
 

@@ -242,6 +242,13 @@ class Float(Field):
     def _getNativeValue(self, value):
         return float(value)
 
+class Number(Field):
+    def _getNativeValue(self, value):
+        try:
+            return int(value)
+        except ValueError:
+            return float(value)
+
 class Enum(Field):
     def __init__(self, values, **kwds):
         self._values = values
