@@ -360,6 +360,7 @@ class Widget(xom.Model):
     def parseType(node):
         # Remap some container names to match code
         widgetMap = {
+            "checkbox"         : "CheckBox",
             "groupingContainer": "GroupingContainer",
             "linkingContainer" : "LinkingContainer",
         }
@@ -478,6 +479,22 @@ class ActionButton(Widget):
     style = xom.Integer(default=0)
     text = xom.String(default="")
     toggle_button = xom.Boolean(default=False)
+    tooltip = xom.String(default="")
+    visible = xom.Boolean(default=True)
+
+class CheckBox(Widget):
+    background_color = Color()
+    bit = xom.Integer(default=0)
+    border_alarm_sensitive = xom.Boolean(default=False)
+    border_color = Color()
+    border_style = xom.Enum(BORDER_STYLES)
+    border_width = xom.Integer(default=0)
+    enabled = xom.Boolean(default=True)
+    # font
+    foreground_color = Color()
+    label = xom.String(default="")
+    pv_name = xom.String(default="")
+    pv_value = xom.String(default="")
     tooltip = xom.String(default="")
     visible = xom.Boolean(default=True)
 

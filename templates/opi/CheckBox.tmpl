@@ -1,0 +1,49 @@
+<div data-pv="{{pv_name}}" class="widget_wrap" style="
+  top: {{y}}px;
+  left: {{x}}px;
+  width: {{width}}px;
+  height: {{height}}px;">
+
+  {% if border_width > 0 and border_style.index != 0 %}
+  <style scoped>
+    .border{{unique_id}}_0 {
+      padding: {{max(0, 2-border_width)}}px;
+      border-width: {{border_width}}px;
+      {% if border_style.index == 0 %}
+      border-style: {{border_style}};
+      border-color: transparent;
+      {% else %}
+      border-style: solid;
+      border-color: rgb({{border_color.red}},{{border_color.green}},{{border_color.blue}});
+      {% end %}
+    }
+    .border{{unique_id}}_1 {
+      padding: {{max(0, border_width-2)}}px;
+    }
+    .border{{unique_id}}_2 {
+      padding: {{max(0, border_width-2)}}px;
+    }
+    .border{{unique_id}}_3 {
+      padding: {{max(0, border_width-2)}}px;
+    }
+  </style>
+  {% end %}
+
+  {% if border_alarm_sensitive %}
+  <div class="disconnected" data-map="js: elementSetVisible(element, %alarm.severity%==4)"></div>
+  {% end %}
+
+  <div data-id="content" class="widget_body border{{unique_id}}_0" data-type="{{widget_type}}"
+    data-map="{% if border_alarm_sensitive %}css: widget_body border_%alarm.severity% border{{unique_id}}_%alarm.severity%;{% end %}
+              title: {{tooltip}};
+             "
+    style="width:  calc(100% - {{max(4, 2*border_width if border_style.index!=0 else 0)}}px);
+           height: calc(100% - {{max(4, 2*border_width if border_style.index!=0 else 0)}}px);
+           white-space: nowrap;
+          ">
+    <input type="checkbox" id="checkbox{{unique_id}}" 
+      data-map="js: element.prop('checked', (parseInt(%value%)>>{{bit}}) % 2 != 0);">
+    <label for="checkbox{{unique_id}}">{{label}}</label>
+  </div>
+
+</div>
