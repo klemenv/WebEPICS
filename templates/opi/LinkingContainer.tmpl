@@ -1,0 +1,17 @@
+<div class="widget_wrap linkingcontainer" style="
+  top: {{y}}px;
+  left: {{x}}px;
+  width: {{width}}px;
+  height: {{height}}px;">
+
+  <iframe id="widget_body" src="{{opi_file}}"
+    style="border-width: {{border_width}}px;
+           border-style: {{border_style}};
+           border-color: rgb({{border_color.red}},{{border_color.green}},{{border_color.blue}});
+           width: calc(100% - {{4 + (border_width if border_style.index!=0 else 0)}}px);
+           height: calc(100% - {{4 + (border_width if border_style.index!=0 else 0)}}px);
+           background-color: rgb({{background_color.red}},{{background_color.green}},{{background_color.blue}});
+           overflow: {% if resize_behaviour == "scroll" %}scroll{% else %}hidden{% end %};
+          ">
+  </iframe>
+</div>

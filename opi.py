@@ -77,9 +77,8 @@ class Converter:
         except:
             include_parent_macros = True
 
-        # Handle macros in actions
-        for action in widget.actions:
-            action.addMacros(macros)
+        # Let widget handle parent macros
+        widget.setParentMacros(macros)
 
         # Replace macros in macros
         # TODO!
@@ -360,7 +359,10 @@ class Widget(xom.Model):
     @staticmethod
     def parseType(node):
         # Remap some container names to match code
-        widgetMap = { "groupingContainer": "GroupingContainer" }
+        widgetMap = {
+            "groupingContainer": "GroupingContainer",
+            "linkingContainer" : "LinkingContainer",
+        }
 
         for key,value in node.attributes.items():
             if key == "typeId":
@@ -383,6 +385,11 @@ class Widget(xom.Model):
             raise ValueError("<{0}> Attribute typeId mismatch {1}!={2}".format(node.nodeName, typeId, self._typeId))
 
         return super(Widget, self).parse(node)
+
+    def setParentMacros(self, macros):
+        """ Called from converter to recognize additional macros provided by parent. """
+        for action in self.actions:
+            action.addMacros(macros)
 
 class Display(Widget):
     """ Model for the main Display widget. """
@@ -585,6 +592,40 @@ class LED(Widget):
         # Assign 'states' field
         self.setField("states", states, "states")
         return True
+
+class LinkingContainer(Widget):
+    background_color = Color()
+    border_color = Color()
+    border_style = xom.Enum(BORDER_STYLES)
+    border_width = xom.Integer(default=0)
+    enabled = xom.Boolean(default=True)
+    # font
+    foreground_color = Color()
+    group_name = xom.String(default="")
+    macros = Macros()
+    opi_file = xom.String(default="")
+    resize_behaviour = xom.Enum(["resize","fit","crop","scroll"])
+    tooltip = xom.String(default="")
+    visible = xom.Boolean(default=True)
+    widgets = WidgetList(tagname="widget", default=[])
+
+    def setParentMacros(self, macros):
+        """ Invoke base class function and also update opi_path field. """
+        super(LinkingContainer, self).setParentMacros(macros)
+
+        m = {}
+        if self.macros.include_parent_macros:
+            m = dict(macros)
+        # Same macros defined in widget overwrite parent macros
+        for k,v in self.macros.items():
+            m[k] = v
+
+        if m and self.opi_file:
+            # Turn into a query string
+            self.opi_file += "?"
+            escape = tornado.escape.url_escape
+            self.opi_file += "&".join("{0}={1}".format(escape(k), escape(v)) for k,v in m.iteritems())
+
 
 class TextInput(Widget):
     background_color = Color()
