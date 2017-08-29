@@ -5,12 +5,12 @@
   height: {{height}}px;">
 
 
-  {% if border_width > 0 and border_style != 0 %}
+  {% if border_width > 0 and border_style.index != 0 %}
   <style scoped>
     .border{{unique_id}}_0 {
       padding: {{max(0, 2-border_width)}}px;
       border-width: {{border_width}}px;
-      {% if border_style_index == 0 %}
+      {% if border_style.index == 0 %}
       border-style: {{border_style}};
       border-color: transparent;
       {% else %}
@@ -37,13 +37,13 @@
   <div data-id="border"
     {% if border_alarm_sensitive %}
     data-map="css: border_%alarm.severity% border{{unique_id}}_%alarm.severity%"
-    style="width: calc(100% - {{max(4, 2*border_width if border_style_index!=0 else 0)}}px);
-           height: calc(100% - {{max(4, 2*border_width if border_style_index!=0 else 0)}}px);
+    style="width: calc(100% - {{max(4, 2*border_width if border_style.index!=0 else 0)}}px);
+           height: calc(100% - {{max(4, 2*border_width if border_style.index!=0 else 0)}}px);
            display: inline-block;"
     {% else %}
     class="border{{unique_id}}_0"
-    style="width: calc(100% - {{2*border_width if border_style_index!=0 else 0}}px);
-           height: calc(100% - {{2*border_width if border_style_index!=0 else 0}}px);
+    style="width: calc(100% - {{2*border_width if border_style.index!=0 else 0}}px);
+           height: calc(100% - {{2*border_width if border_style.index!=0 else 0}}px);
            display: inline-block;"
     {% end %}
     >
@@ -53,8 +53,8 @@
       data-map="js: elementSetVisible(element, [%value%, %valueEnum.index%].includes({{state.value}})); title: {{tooltip}}"
       style="width: calc(100%);
              height: calc(100%);
-             top: {{max(2 if border_alarm_sensitive else 0, border_width if border_style!=0 else 0)}}px;
-             left: {{max(2 if border_alarm_sensitive else 0, border_width if border_style!=0 else 0)}}px;
+             top: {{max(2 if border_alarm_sensitive else 0, border_width if border_style.index!=0 else 0)}}px;
+             left: {{max(2 if border_alarm_sensitive else 0, border_width if border_style.index!=0 else 0)}}px;
              background-color: rgb({{state.color.red}},{{state.color.green}},{{state.color.blue}});
              white-space: nowrap;
              {% if not square_led %}border-radius: 50%{% end %}

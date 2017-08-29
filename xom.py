@@ -250,15 +250,44 @@ class Number(Field):
             return float(value)
 
 class Enum(Field):
+    """ Enum field allows only predefined values.
+
+    Field acts like a class with additional sub-field index,
+    thus it should not be replaced with Python object.
+    Overloaded get() method takes care of that. But then we
+    need to overload __repr__() to be useful as any other field.
+
+    Field can be used as <field> or <field>.index where first
+    one returns value from the list and second one the index of
+    that value in the list of available choices.
+    """
     def __init__(self, values, **kwds):
         self._values = values
         if "default" not in kwds:
-            kwds["default"] = 0
+            self.index = 0
+        elif isinstance(kwds["default"], basestring):
+            self.index = values.index(kwds["default"])
+        else:
+            self.index = int(kwds["default"])
+        kwds["default"] = values[self.index]
         super(Enum, self).__init__(**kwds)
+
+    def __repr__(self):
+        return self._value
+
+    def __cmp__(self, other):
+        return  0 if (self._value == other or self.index == other) else 1
+
+    def get(self):
+        return self
 
     def _getNativeValue(self, value):
         index = int(value)
         return self._values[index]
+
+    def parse(self, node):
+        super(Enum, self).parse(node)
+        self.index = self._values.index(self._value)
 
 class List(Field):
     def __init__(self, flat, **kwds):

@@ -4,8 +4,8 @@
   width: {{width}}px;
   height: {{height}}px;">
 
-  {% if border_width > 0 and border_style.index != 0 %}
   <style scoped>
+    {% if border_width > 0 and border_style.index != 0 %}
     .border{{unique_id}}_0 {
       padding: {{max(0, 2-border_width)}}px;
       border-width: {{border_width}}px;
@@ -27,8 +27,27 @@
     .border{{unique_id}}_3 {
       padding: {{max(0, border_width-2)}}px;
     }
+    {% end %}
+
+    .button{{unique_id}}_on {
+      box-shadow: rgb(155, 155, 155) 1px 1px 1px 1px inset;
+    }
+    .button{{unique_id}}_on:after {
+      content: "{{on_label}}";
+    }
+    .button{{unique_id}}_off {
+      box-shadow: none;
+    }
+    .button{{unique_id}}_off:after {
+      content: "{{off_label}}";
+    }
+    .led{{unique_id}}_on {
+      background-color: rgb({{on_color.red}},{{on_color.green}},{{on_color.blue}});
+    }
+    .led{{unique_id}}_off {
+      background-color: rgb({{off_color.red}},{{off_color.green}},{{off_color.blue}});
+    }
   </style>
-  {% end %}
 
   {% if border_alarm_sensitive %}
   <div class="disconnected" data-map="js: elementSetVisible(element, %alarm.severity%==4)"></div>
@@ -48,35 +67,41 @@
     {% end %}
     >
 
-    <button type="button" class="button"
-      data-map="title: {{tooltip}}"
-      data-action="
-        {% for action in actions %}
-          {% if action.type in [ "OPEN_WEBPAGE", "OPEN_FILE" ] %}
-            window.location.href = '{{action.path}}';
-            {% break %}
-          {% elif action.type in "OPEN_DISPLAY" %}
-            {% if action.mode == "replace" %}
-              window.location = '{{action.path}}';
-            {% else %}
-              window.open('{{action.path}}', '_blank');
-            {% end %}
-            {% break %}
-          {% elif action.type in "WRITE_PV" %}
-            setPvValue('{{action.pv_name}}', '{{action.value}}');
-          {% end %}
-        {% end %}
+    <button type="button" class="button" 
+      data-map="title: {{tooltip}};
+                {% if data_type == 'bit' %}
+                js: element.removeClass().addClass( ((parseInt(%value%)>>{{bit}}) % 2 != 0) ? 'button button{{unique_id}}_on' : 'button button{{unique_id}}_off');
+                {% else %}
+                js: element.removeClass().addClass( ((%value%=={{on_state}} || %valueEnum.index%=={{on_state}}) ? 'button button{{unique_id}}_on' : 'button button{{unique_id}}_off');
+                {% end %}
       "
       style="width: 100%;
              height: 100%;
              top: {{max(2 if border_alarm_sensitive else 0, border_width if border_style.index!=0 else 0)}}px;
              left: {{max(2 if border_alarm_sensitive else 0, border_width if border_style.index!=0 else 0)}}px;
-             {% if style == 0 %}
              background-color: rgb({{background_color.red}},{{background_color.green}},{{background_color.blue}});
-             {% end %}
+             {% if not square_button %}border-radius: 50%{% end %}
             ">
-      {{text}}
     </button>
+
+    {% if show_led %}
+    <div data-id="led"
+      {% if data_type == "bit" %}
+      data-map="js: element.removeClass().addClass( ((parseInt(%value%)>>{{bit}}) % 2 != 0) ? 'led{{unique_id}}_on' : 'led{{unique_id}}_off')"
+      {% else %}
+      data-map="js: element.removeClass().addClass( ((%value%=={{on_state}} || %valueEnum.index%=={{on_state}}) ? 'led{{unique_id}}_on' : 'led{{unique_id}}_off')"
+      {% end %}
+
+      style="width: 15px;
+             height: 15px;
+             top: calc(50% - 7px);
+             left: calc(100% - 30px);
+             border-radius: 50%;
+             position: absolute;
+             padding: 0px;
+            ">
+    </div>
+    {% end %}
 
     <!--
     Actions:

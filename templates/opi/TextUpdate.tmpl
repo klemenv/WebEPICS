@@ -4,12 +4,12 @@
   width: {{width}}px;
   height: {{height}}px;">
 
-  {% if border_width > 0 and border_style != 0 %}
+  {% if border_width > 0 and border_style.index != 0 %}
   <style scoped>
     .border{{unique_id}}_0 {
       padding: {{max(0, 2-border_width)}}px;
       border-width: {{border_width}}px;
-      {% if border_style_index == 0 %}
+      {% if border_style.index == 0 %}
       border-style: {{border_style}};
       border-color: transparent;
       {% else %}
@@ -41,8 +41,8 @@
               text: %value%;
               title: {{tooltip}};
              "
-    style="width:  calc(100% - {{max(4, 2*border_width if border_style_index!=0 else 0)}}px);
-           height: calc(100% - {{max(4, 2*border_width if border_style_index!=0 else 0)}}px);
+    style="width:  calc(100% - {{max(4, 2*border_width if border_style.index!=0 else 0)}}px);
+           height: calc(100% - {{max(4, 2*border_width if border_style.index!=0 else 0)}}px);
            text-align: {{horizontal_alignment}};
            vertical-align: {{vertical_alignment}};
            background-color: rgb({{background_color.red}},{{background_color.green}},{{background_color.blue}});

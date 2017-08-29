@@ -401,7 +401,6 @@ class TextUpdate(Widget):
     border_alarm_sensitive = xom.Boolean(default=False)
     border_color = Color()
     border_style = xom.Enum(BORDER_STYLES)
-    border_style_index = xom.Integer(tagname="border_style", default=0)
     border_width = xom.Integer(default=0)
     foreground_color = Color()
     format_type = xom.Integer(default=0)
@@ -444,7 +443,6 @@ class Label(Widget):
     background_color = Color()
     border_color = Color()
     border_style = xom.Enum(BORDER_STYLES)
-    border_style_index = xom.Integer(tagname="border_style", default=0)
     border_width = xom.Integer(default=0)
     enabled = xom.Boolean(default=True)
     # font
@@ -462,7 +460,6 @@ class ActionButton(Widget):
     border_alarm_sensitive = xom.Boolean(default=False)
     border_color = Color()
     border_style = xom.Enum(BORDER_STYLES)
-    border_style_index = xom.Integer(tagname="border_style", default=0)
     border_width = xom.Integer(default=0)
     enabled = xom.Boolean(default=True)
     # font
@@ -481,7 +478,6 @@ class GroupingContainer(Widget):
     background_color = Color()
     border_color = Color()
     border_style = xom.Enum(BORDER_STYLES)
-    border_style_index = xom.Integer(tagname="border_style", default=0)
     border_width = xom.Integer(default=0)
     enabled = xom.Boolean(default=True)
     # font
@@ -499,7 +495,6 @@ class LED(Widget):
     border_alarm_sensitive = xom.Boolean(default=False)
     border_color = Color()
     border_style = xom.Enum(BORDER_STYLES)
-    border_style_index = xom.Integer(tagname="border_style", default=0)
     border_width = xom.Integer(default=0)
     data_type = xom.Enum(["bit", "enum"])
     enabled = xom.Boolean(default=True)
@@ -596,7 +591,6 @@ class TextInput(Widget):
     border_alarm_sensitive = xom.Boolean(default=False)
     border_color = Color()
     border_style = xom.Enum(BORDER_STYLES)
-    border_style_index = xom.Integer(tagname="border_style", default=0)
     border_width = xom.Integer(default=0)
     enabled = xom.Boolean(default=True)
     #font
@@ -616,7 +610,6 @@ class TextInput(Widget):
     text = xom.String(default="")
     tooltip = xom.String(default="")
     transparent = xom.Boolean(default=False)
-    vertical_alignment = xom.Enum(VERTICAL_ALIGN)
     visible = xom.Boolean(default=True)
 
     def parse(self, node):
@@ -636,6 +629,38 @@ class TextInput(Widget):
 
             fmt = fmt.format(precision)
         self.setField("value_format", fmt)
-        print "Parsed TextInput"
 
         return True
+
+class BoolButton(Widget):
+    background_color = Color()
+    bit = xom.Integer(default=0)
+    border_alarm_sensitive = xom.Boolean(default=False)
+    border_color = Color()
+    border_style = xom.Enum(BORDER_STYLES)
+    border_width = xom.Integer(default=0)
+    confirm_message = xom.String(default="")
+    data_type = xom.Enum(["bit", "enum"])
+    enabled = xom.Boolean(default=True)
+    # font
+    foreground_color = Color()
+    labels_from_pv = xom.Boolean(default=False)
+    off_color = Color()
+    off_label = xom.String(default="")
+    off_label = xom.String(default="")
+    off_state = xom.String(default="")
+    on_color = Color()
+    on_label = xom.String(default="")
+    on_state = xom.String(default="")
+    password = xom.String(default="")
+    push_action_index = xom.Integer(default=0)
+    pv_name = xom.String(default="")
+    pv_value = xom.String(default="")
+    released_action_index = xom.Integer(default=0)
+    show_boolean_label = xom.Boolean(default=True)
+    show_confirm_dialog = xom.Enum(["no","both","push","release"])
+    show_led = xom.Boolean(default=True)
+    square_button = xom.Boolean(default=False)
+    toggle_button = xom.Boolean(default=True)
+    tooltip = xom.String(default="")
+    visible = xom.Boolean(default=True)
