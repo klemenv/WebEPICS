@@ -224,6 +224,9 @@ $(document).ready(function() {
                 case "text":
                     el.text(value);
                     break;
+                case "value":
+                    el.val(value);
+                    break;
                 case "css":
                     el.removeClass().addClass(value);
                     break;

@@ -1,0 +1,62 @@
+<div data-pv="{{pv_name}}" class="widget_wrap" style="
+  top: {{y}}px;
+  left: {{x}}px;
+  width: {{width}}px;
+  height: {{height}}px;">
+
+  {% if border_width > 0 and border_style != 0 %}
+  <style scoped>
+    .border{{unique_id}}_0 {
+      padding: {{max(0, 2-border_width)}}px;
+      border-width: {{border_width}}px;
+      {% if border_style_index == 0 %}
+      border-style: {{border_style}};
+      border-color: transparent;
+      {% else %}
+      border-style: solid;
+      border-color: rgb({{border_color.red}},{{border_color.green}},{{border_color.blue}});
+      {% end %}
+    }
+    .border{{unique_id}}_1 {
+      padding: {{max(0, border_width-2)}}px;
+    }
+    .border{{unique_id}}_2 {
+      padding: {{max(0, border_width-2)}}px;
+    }
+    .border{{unique_id}}_3 {
+      padding: {{max(0, border_width-2)}}px;
+    }
+  </style>
+  {% end %}
+
+  {% if border_alarm_sensitive %}
+  <div class="disconnected" data-map="js: elementSetVisible(element, %alarm.severity%==4)"></div>
+  {% end %}
+
+  {% if multiline_input %}
+  <textarea data-id="input" wrap="soft"
+  {% else %}
+  <input data-id="input" align="{{horizontal_alignment}}" min="{{minimum}}" max="{{maximum}}"
+         autocomplete="off" {% if not enabled %}disabled{% end %} value="{{text}}"
+  {% end %}
+
+    data-id="content" class="widget_body border{{unique_id}}_0" data-type="{{widget_type}}"
+    {% if value_format is not None %}data-format={{value_format}}{% end %}
+    data-map="{% if border_alarm_sensitive %}css: widget_body border_%alarm.severity% border{{unique_id}}_%alarm.severity%;{% end %}
+              {% if precision_from_pv %}format: %display.format%;{% end %}
+              {% if show_units %}units: %display.units%;{% end %}
+              value: %value%;
+              title: {{tooltip}};
+             "
+    style="width:  calc(100% - {{max(4, 2*border_width if border_style_index!=0 else 0)}}px);
+           height: calc(100% - {{max(4, 2*border_width if border_style_index!=0 else 0)}}px);
+           text-align: {{horizontal_alignment}};
+           vertical-align: {{vertical_alignment}};
+           background-color: rgb({{background_color.red}},{{background_color.green}},{{background_color.blue}});
+          ">
+
+  {% if multiline_input %}
+  {{text}}</textarea>
+  {% end %}
+
+</div>

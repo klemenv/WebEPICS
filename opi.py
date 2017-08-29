@@ -183,10 +183,10 @@ class WidgetList(xom.List):
         classname = Widget.parseType(node)
         try:
             obj = globals()[classname](tagname=node.nodeName)
+            if not isinstance(obj, Widget):
+                raise ValueError("<{0}> Class '{1}' is not derived from Widget".format(node.nodeName, classname))
         except KeyError:
             obj = Widget(tagname=node.nodeName)
-        if not isinstance(obj, Widget):
-            raise ValueError("<{0}> Class '{1}' is not derived from Widget".format(node.nodeName, classname))
         return obj
 
 class ActionList(xom.List):
@@ -591,3 +591,51 @@ class LED(Widget):
         self.setField("states", states, "states")
         return True
 
+class TextInput(Widget):
+    background_color = Color()
+    border_alarm_sensitive = xom.Boolean(default=False)
+    border_color = Color()
+    border_style = xom.Enum(BORDER_STYLES)
+    border_style_index = xom.Integer(tagname="border_style", default=0)
+    border_width = xom.Integer(default=0)
+    enabled = xom.Boolean(default=True)
+    #font
+    foreground_color = Color()
+    format_type = xom.Integer(default=0)
+    horizontal_alignment = xom.Enum(HORIZONTAL_ALIGN)
+    limits_from_pv = xom.Boolean(default=False)
+    maximum = xom.Number(default=100)
+    minimum = xom.Number(default=0)
+    multiline_input = xom.Boolean(default=False)
+    precision = xom.Integer(default=0)
+    precision_from_pv = xom.Boolean(default=True)
+    pv_name = xom.String(default="")
+    pv_value = xom.String(default="")
+    selector_type = xom.Enum(["none","file","datetime"])
+    show_units = xom.Boolean(default=True)
+    text = xom.String(default="")
+    tooltip = xom.String(default="")
+    transparent = xom.Boolean(default=False)
+    vertical_alignment = xom.Enum(VERTICAL_ALIGN)
+    visible = xom.Boolean(default=True)
+
+    def parse(self, node):
+        super(TextInput, self).parse(node)
+
+        if self.precision_from_pv:
+            fmt = None
+        else:
+            try:
+                fmt = FORMAT_TYPES[self.format_type]
+            except:
+                fmt = FORMAT_TYPES[0]
+
+            precision = self.precision
+            if self.format_type == 5:
+                precision = 8
+
+            fmt = fmt.format(precision)
+        self.setField("value_format", fmt)
+        print "Parsed TextInput"
+
+        return True
