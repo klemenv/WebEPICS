@@ -346,7 +346,9 @@ class ConvertHandler(tornado.web.RequestHandler):
         # request.arguments is a dictionary of lists in case multiple
         # names are defined in query. We only care about last macro
         # definition.
-        macros = {k: v[-1] for k,v in self.request.arguments.iteritems()}
+        macros = {}
+        for k,v in self.request.arguments.iteritems():
+            macros[k] = v[-1]
         html = self.converters[filetype].replaceMacros(html, macros)
 
         # We're done

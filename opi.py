@@ -36,7 +36,8 @@ class Converter:
     def replaceMacros(self, str, macros):
         """ Replaces macros with their actual values in given string. """
         for macro,value in macros.iteritems():
-            str = re.sub("\$\({0}\)".format(macro), value, str, flags=re.MULTILINE)
+            regex = re.compile("\$\({0}\)".format(macro), flags=re.MULTILINE)
+            str = re.sub(regex, value, str)
         return str
 
     def getHtml(self, xml_str, macros={}):
