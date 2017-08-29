@@ -15,7 +15,7 @@ import xml.dom.minidom
 import tornado.template
 import re
 
-BORDER_STYLES=['solid', 'solid', 'groove', 'ridge', 'groove', 'ridge',
+BORDER_STYLES=['none', 'solid', 'groove', 'ridge', 'groove', 'ridge',
                'inset', 'outset', 'dotted', 'dashed', 'dashed', 'dashed',
                'solid', 'solid', 'solid', 'hidden' ]
 HORIZONTAL_ALIGN=["left", "center", "right"]
