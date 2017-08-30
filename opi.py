@@ -34,11 +34,7 @@ class Converter:
         self.caching = caching
 
     def replaceMacros(self, str, macros):
-        """ Replaces macros with their actual values in given string. """
-        for macro,value in macros.iteritems():
-            regex = re.compile("\$\({0}\)".format(macro), flags=re.MULTILINE)
-            str = re.sub(regex, value, str)
-        return str
+        return Macros.replace(str, macros)
 
     def getHtml(self, xml_str, macros={}):
         try:
@@ -60,11 +56,6 @@ class Converter:
         # Help parser identify widgets
         widget.setField("unique_id", unique_id)
 
-        # Apply transformations
-        # TODO: needs to move into widget parsing
-        #for trans in self._transformations:
-        #    replacements = trans(replacements, macros)
-
         # Make a copy that we can modify
         macros = dict(macros)
 
@@ -74,15 +65,12 @@ class Converter:
             if not include_parent_macros:
                 macros = dict()
             for macro,value in widget.macros.items():
-                macros[macro] = value
+                macros[macro] = Macros.replace(value, macros)
         except:
             include_parent_macros = True
 
         # Let widget handle parent macros
         widget.setParentMacros(macros)
-
-        # Replace macros in macros
-        # TODO!
 
         # Recursively render sub-widgets
         body = ""
@@ -270,6 +258,14 @@ class Macros(xom.Model):
     def values(self):
         return [ v for k,v in self.toDict().iteritems() if k != "include_parent_macros"]
 
+    @staticmethod
+    def replace(str, macros):
+        """ Replaces macros with their actual values in given string. """
+        for macro,value in macros.iteritems():
+            regex = re.compile("\$\({0}\)".format(macro), flags=re.MULTILINE)
+            str = re.sub(regex, value, str)
+        return str
+
 class Action(xom.Model):
     """ Model for a single action. """
     type = xom.String(tagname="__self__", attrname="type")
@@ -319,7 +315,7 @@ class OpenDisplayAction(OpenPathAction):
             m = dict(macros)
         # Same macros defined in widget overwrite parent macros
         for k,v in self.macros.items():
-            m[k] = v
+            m[k] = Macros.replace(v, m)
 
         if m:
             # Turn into a query string
@@ -636,7 +632,7 @@ class LinkingContainer(Widget):
             m = dict(macros)
         # Same macros defined in widget overwrite parent macros
         for k,v in self.macros.items():
-            m[k] = v
+            m[k] = Macros.replace(v, m)
 
         if m and self.opi_file:
             # Turn into a query string
