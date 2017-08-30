@@ -70,7 +70,7 @@
     <button type="button" class="button" 
       data-map="title: {{tooltip}};
                 {% if data_type == 'bit' %}
-                js: element.removeClass().addClass( ((parseInt(%value%)>>{{bit}}) % 2 != 0) ? 'button button{{unique_id}}_on' : 'button button{{unique_id}}_off');
+                js: element.removeClass().addClass( ((parseInt(%valueNum%)>>{{bit}}) % 2 != 0) ? 'button button{{unique_id}}_on' : 'button button{{unique_id}}_off');
                 {% else %}
                 js: element.removeClass().addClass( ((%value%=={{on_state}} || %valueEnum.index%=={{on_state}}) ? 'button button{{unique_id}}_on' : 'button button{{unique_id}}_off');
                 {% end %}
@@ -87,7 +87,7 @@
     {% if show_led %}
     <div data-id="led"
       {% if data_type == "bit" %}
-      data-map="js: element.removeClass().addClass( ((parseInt(%value%)>>{{bit}}) % 2 != 0) ? 'led{{unique_id}}_on' : 'led{{unique_id}}_off')"
+      data-map="js: element.removeClass().addClass( ((parseInt(%valueNum%)>>{{bit}}) % 2 != 0) ? 'led{{unique_id}}_on' : 'led{{unique_id}}_off')"
       {% else %}
       data-map="js: element.removeClass().addClass( ((%value%=={{on_state}} || %valueEnum.index%=={{on_state}}) ? 'led{{unique_id}}_on' : 'led{{unique_id}}_off')"
       {% end %}

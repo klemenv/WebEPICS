@@ -117,6 +117,16 @@ $(document).ready(function() {
             cachedPVs[rsp.pv] = rsp;
         }
 
+        // Enum hack, provide a combined numeric field. If enum field is detected,
+        // use it's index, otherwise match the value.
+        if ("valueEnum" in rsp) {
+            rsp.valueNum = rsp.valueEnum.index;
+        } else if ($.isNumeric(rsp.value)) {
+            rsp.valueNum = rsp.value;
+        } else {
+            rsp.valueNum = -1;
+        }
+
         // Select all widgets subscribed to this PV and apply mapped actions on sub-elements
         $("[data-pv='" + rsp.pv + "'] *[data-map]").each(function() {
             elementProcessMapping($(this), update);

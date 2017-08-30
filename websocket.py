@@ -51,7 +51,6 @@ class PV():
             #log.info("Subscribed client: {0}".format(client.getClientId()))
 
         if self._ch is None:
-            print self._pvname
             self._ch = pvaccess.Channel(self._pvname, self._protocol)
             self._ch.subscribe("webepics", self.updateCb)
             self._ch.startMonitor("field()")
