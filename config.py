@@ -20,7 +20,8 @@ default_cfg = {
     },
     "server": {
         "port": 8888,
-        "threads": 1
+        "threads": 1,
+        "redirects": {}
     },
     "static_web": {
         "path": "static/"

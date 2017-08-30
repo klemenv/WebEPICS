@@ -38,11 +38,16 @@ if __name__ == "__main__":
     convert_ctx = ConvertHandler.createContext(cfg["convert"], "ws://<hostname>/ws")
 
     settings = cfg["tornado"]
-    app = tornado.web.Application([
+    handlers = [
         (r"/ws", WebSocketHandler), # , {"websocket_max_message_size": 4096, "websocket_ping_interval": 30 }),
         (r"/static/(.*)", tornado.web.StaticFileHandler, cfg["static_web"]),
         (r"/.*", ConvertHandler, dict(ctx=convert_ctx))
-        ], **settings)
+    ]
+    # Put redirects at the front
+    for orig,url in cfg["server"]["redirects"].iteritems():
+        handlers.insert(0, (orig, tornado.web.RedirectHandler, {"url": url}) )
+
+    app = tornado.web.Application(handlers, **settings)
 
     server = tornado.httpserver.HTTPServer(app)
     server.bind(cfg["server"]["port"])
