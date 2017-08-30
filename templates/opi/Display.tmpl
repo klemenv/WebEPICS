@@ -9,19 +9,12 @@
     <script src="/static/webepics-opi.js"></script>
     <script>
         // URL of the WebSocket server
-        var ws_url = "ws://localhost:8888/ws";
+        var ws_url = "$(WEBSOCKET_URL)";
 
         $(function() {
             $(document).tooltip();
         });
 	</script>
-
-    <style>
-    label {
-        display: inline-block;
-        width: 5em;
-    }
-    </style>
 </head>
 
 <body style="background-color: rgb({{background_color.red}},{{background_color.green}},{{background_color.blue}});">

@@ -250,7 +250,7 @@ class ConvertHandler(tornado.web.RequestHandler):
     """
 
     @staticmethod
-    def createContext(cfg):
+    def createContext(cfg, wsUrlPattern):
         """ Create context to be used by all ConvertHandler instancies.
 
         This function creates a single context that can be used by multiple
@@ -271,6 +271,7 @@ class ConvertHandler(tornado.web.RequestHandler):
         else:
             ctx["cache"] = FileCache(cfg["cache"]["path"])
             log.info("Cache base dir: {0}".format(cfg["cache"]["path"]))
+        ctx["wsUrlPattern"] = wsUrlPattern
 
         # Setup converters
         ctx["converters"] = {}
@@ -288,6 +289,7 @@ class ConvertHandler(tornado.web.RequestHandler):
         self.loader = ctx["loader"]
         self.cache = ctx["cache"]
         self.converters = ctx["converters"]
+        self.wsUrlPattern = ctx["wsUrlPattern"]
 
     def get(self):
         """ Overloaded Tornado get() handler.
@@ -349,6 +351,10 @@ class ConvertHandler(tornado.web.RequestHandler):
         macros = {}
         for k,v in self.request.arguments.iteritems():
             macros[k] = v[-1]
+
+        # Push WebSocket server URL as run-time macro
+        macros["WEBSOCKET_URL"] = self.getWebSocketUrl()
+
         html = self.converters[filetype].replaceMacros(html, macros)
 
         # We're done
@@ -370,3 +376,13 @@ class ConvertHandler(tornado.web.RequestHandler):
 
     def check_etag_header(self):
         return False
+
+    def getWebSocketUrl(self):
+        """ Returns full URL for the WebSocket connection.
+
+        This works regardless of multi-IP servers, since the request has
+        already been established so use its IP/hostname.
+        """
+        hostname = urlparse.urlparse(self.wsUrlPattern).netloc
+        url = self.wsUrlPattern.replace(hostname, self.request.host)
+        return url

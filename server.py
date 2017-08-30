@@ -35,7 +35,7 @@ if __name__ == "__main__":
         sys.exit(1)
 
     # Create single context - instantiate FileLoader, Cache etc.
-    convert_ctx = ConvertHandler.createContext(cfg["convert"])
+    convert_ctx = ConvertHandler.createContext(cfg["convert"], "ws://<hostname>/ws")
 
     settings = cfg["tornado"]
     app = tornado.web.Application([
