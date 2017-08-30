@@ -1,0 +1,81 @@
+<div data-pv="{{pv_name}}" class="widget_wrap" style="
+  top: {{y-2}}px;
+  left: {{x-2}}px;
+  {% if width != -1 %}width: {{width+4}}px;{% end %}
+  {% if height != -1 %}height: {{height+4}}px;{% end %}
+  ">
+
+  <style scoped>
+    .button{{unique_id}}_on {
+      box-shadow: rgb(155, 155, 155) 1px 1px 1px 1px inset;
+    }
+    .button{{unique_id}}_on:after {
+      content: "{{on_label}}";
+    }
+    .button{{unique_id}}_off {
+      box-shadow: none;
+    }
+    .button{{unique_id}}_off:after {
+      content: "{{off_label}}";
+    }
+    .led{{unique_id}}_on {
+      background-color: rgb({{on_color.red}},{{on_color.green}},{{on_color.blue}});
+    }
+    .led{{unique_id}}_off {
+      background-color: rgb({{off_color.red}},{{off_color.green}},{{off_color.blue}});
+    }
+  </style>
+
+  {% if pv_name %}
+  <div class="disconnected" data-map="js: elementSetVisible(element, %alarm.severity%==4)"></div>
+  {% end %}
+
+  <div data-id="border"
+    {% if alarm_border and pv_name %}data-map="css: widget_body border_%alarm.severity%"{% else %}class="border_0"{% end %}
+    style="{% if width != -1 %}width: {{width}}px;{% end %}
+           {% if height != -1 %}height: {{height}}px;{% end %}
+           top: 0px;
+           left: 0px;
+           display: inline-block;"
+    >
+
+    <button type="button" class="button" 
+      data-map="title: {{tooltip}};
+                js: element.removeClass().addClass( ((%valueNum%>>{{bit}}) % 2 != 0) ? 'button button{{unique_id}}_on' : 'button button{{unique_id}}_off');
+      "
+      style="{% if width != -1 %}width: {{width}}px;{% end %}
+             {% if height != -1 %}height: {{height}}px;{% end %}
+             top: 2px;
+             left: 2px;
+             background-color: rgb({{background_color.red}},{{background_color.green}},{{background_color.blue}});
+            ">
+    </button>
+
+    {% if show_led %}
+    <div data-id="led"
+      data-map="js: element.removeClass().addClass( ((%valueNum%>>{{bit}}) % 2 != 0) ? 'led{{unique_id}}_on' : 'led{{unique_id}}_off')"
+      style="width: 15px;
+             height: 15px;
+             top: calc(50% - 9px);
+             left: calc(100% - 32px);
+             border-radius: 50%;
+             position: absolute;
+             padding: 0px;
+            ">
+    </div>
+    {% end %}
+
+    <!--
+    Actions:
+    {% for action in actions %}
+      {% if action.type == "OPEN_DISPLAY" %}
+        Open: {{action.path}}
+      {% elif action.type == "WRITE_PV" %}
+        Write PV: {{action.pv_name}}={{action.value}}
+      {% end %}
+    {% end %}
+    //-->
+
+  </div>
+
+</div>

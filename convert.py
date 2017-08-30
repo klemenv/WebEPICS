@@ -19,6 +19,7 @@ import urlparse
 
 from common import WebEpicsError, WebEpicsWarning
 import opi
+import bob
 
 import tornado.web
 import tornado.escape
@@ -281,6 +282,12 @@ class ConvertHandler(tornado.web.RequestHandler):
             else:
                 ctx["converters"]["opi"] = opi.Converter(cfg["opi"]["templates"], ctx["cache"] != None)
                 log.info("Loaded .opi file converter")
+        if "bob" in cfg:
+            if "templates" not in cfg["bob"]:
+                log.error("Configuration error: missing 'bob/templates' directive")
+            else:
+                ctx["converters"]["bob"] = bob.Converter(cfg["bob"]["templates"], ctx["cache"] != None)
+                log.info("Loaded .bob file converter")
 
         return ctx
 

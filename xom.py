@@ -68,6 +68,13 @@ class Model(Entity):
 
                 self.setField(fieldname, entity, tagname)
 
+    def get(self):
+        for tagname,entities in self._entities.items():
+            for fieldname,entity in entities:
+                if isinstance(entity, Entity):
+                    setattr(self, fieldname, entity.get())
+        return self
+
     def setField(self, fieldname, value, tagname=None):
         """ Sets or updates the field handled by this class.
 
@@ -97,7 +104,7 @@ class Model(Entity):
             for fieldname,entity in entities:
                 if isinstance(entity, Entity):
                     try:
-                        if entity.parse(child) and isinstance(entity, Field):
+                        if entity.parse(child):
                             # Now replace Field with a Python type variable
                             # so that we don't have to implement __repr__, __cmp__
                             # and others.
@@ -128,7 +135,7 @@ class Model(Entity):
         # Now check that all required fields have been populated
         for tagname,entities in self._entities.items():
             for fieldname,entity in entities:
-                if isinstance(entity, Field):
+                if isinstance(entity, Entity):
                     # entity.get() will throw if not set
                     setattr(self, fieldname, entity.get())
 
@@ -282,7 +289,10 @@ class Enum(Field):
         return self
 
     def _getNativeValue(self, value):
-        index = int(value)
+        if value in self._values:
+            index = self._values.index(value)
+        else:
+            index = int(value)
         return self._values[index]
 
     def parse(self, node):

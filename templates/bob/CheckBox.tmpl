@@ -1,0 +1,28 @@
+<div data-pv="{{pv_name}}" class="widget_wrap" style="
+  top: {{y-2}}px;
+  left: {{x-2}}px;
+  {% if width != -1 %}width: {{width+4}}px;{% end %}
+  {% if height != -1 %}height: {{height+4}}px;{% end %}
+  ">
+
+  {% if pv_name %}
+  <div class="disconnected" data-map="js: elementSetVisible(element, %alarm.severity%==4)"></div>
+  {% end %}
+
+  <div data-id="border" class="widget_body {% if not alarm_border %}border_0{% end %}" data-type="{{widget_type}}"
+    data-map="{% if alarm_border and pv_name %}css: widget_body border_%alarm.severity%;{% end %}
+              title: {{tooltip}};
+             "
+    style="{% if width != -1 %}width: {{width}}px;{% end %}
+           {% if height != -1 %}height: {{height}}px;{% end %}
+           top: 0px;
+           left: 0px;
+           display: inline-block;
+           white-space: nowrap;
+          ">
+    <input type="checkbox" id="checkbox{{unique_id}}"
+      data-map="js: element.prop('checked', (parseInt(%value%)>>{{bit}}) % 2 != 0);">
+    <label for="checkbox{{unique_id}}">{{label}}</label>
+  </div>
+
+</div>

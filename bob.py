@@ -1,4 +1,4 @@
-# opi.py
+# bob.py
 #
 # Copyright (c) 2017 Oak Ridge National Laboratory.
 # All rights reserved.
@@ -7,13 +7,15 @@
 # @author Klemen Vodopivec
 
 """
-OPI files handling and transforming to HTML.
+BOB files handling and transforming to HTML.
 """
 
 import xom
 import xml.dom.minidom
 import tornado.template
 import re
+
+import opi
 
 BORDER_STYLES=['none', 'solid', 'groove', 'ridge', 'groove', 'ridge',
                'inset', 'outset', 'dotted', 'dashed', 'dashed', 'dashed',
@@ -23,7 +25,7 @@ VERTICAL_ALIGN=["top", "middle", "bottom"]
 FORMAT_TYPES=["%{0}b", "%{0}d", "%{0}f", "%{0}x", "%{0}b", "%{0}x", "%{0}b", "%{0}f", "%{0}f", "%{0}f", "%{0}f"]
 
 class Converter:
-    """ OPI convert helper class.
+    """ BOB convert helper class.
 
     Implements getHtml() and replaceMacros() methods. Called from outside.
     """
@@ -40,7 +42,7 @@ class Converter:
         try:
             node = xml.dom.minidom.parseString(xml_str)
         except Exception, e:
-            raise RuntimeError("Failed to parse OPI file: {0}".format(e))
+            raise RuntimeError("Failed to parse BOB file: {0}".format(e))
 
         if len(node.childNodes) != 1:
             raise ValueError("<{0}> Expecting 1 child node, got {1}".format(node.nodeName, len(node.childNodes)))
@@ -88,7 +90,7 @@ class Converter:
                 tmpl_name = "Widget.tmpl"
                 tmpl = self.templates.load(tmpl_name)
             except IOError, e:
-                raise RuntimeError("Failed to load OPI template file '{0}': unsupported widget type {1}".format(tmpl_name, e.strerror))
+                raise RuntimeError("Failed to load BOB template file '{0}': unsupported widget type {1}".format(tmpl_name, e.strerror))
         if not self.caching:
             self.templates.reset()
 
@@ -99,7 +101,7 @@ class Converter:
             # Since there was an error in the template file, let user edit the file without restarting server
             self.templates.reset()
 
-            raise RuntimeError("Failed to process OPI template file '{0}': {1}".format(tmpl_name, str(e)))
+            raise RuntimeError("Failed to process BOB template file '{0}': {1}".format(tmpl_name, str(e)))
 
         # Replace available macros
         macros["pv_name"] = widget.pv_name if "pv_name" in dir(widget) else ""
@@ -121,16 +123,13 @@ class Converter:
 
         return html
 
-
-
 ##############################################################################
-### OPI widgets support classes, mostly extending xom Fields/Models with   ###
+### BOB widgets support classes, mostly extending xom Fields/Models with   ###
 ### custom behavior                                                        ###
 ##############################################################################
 
 class WidgetList(xom.List):
-    """ Overloaded xom.List to instantiate different Widget models based on
-    typeId XML node attribute."""
+    """ While the same as opi implementation, it searches in bob namespace. """
 
     def __init__(self, **kwds):
         super(WidgetList, self).__init__(True, **kwds)
@@ -168,7 +167,7 @@ class WidgetList(xom.List):
         return False
 
     def _getInstance(self, node):
-        """ Overloaded method to instantiate OPI widget based on typeId attribute. """
+        """ Overloaded method to instantiate BOB widget based on typeId attribute. """
         classname = Widget.parseType(node)
         try:
             obj = globals()[classname](tagname=node.nodeName)
@@ -178,18 +177,13 @@ class WidgetList(xom.List):
             obj = Widget(tagname=node.nodeName)
         return obj
 
-class ActionList(xom.List):
-    """ Overloaded xom.List to instantiate Action models based on type attribute. """
-
-    def __init__(self, **kwds):
-        super(ActionList, self).__init__(False, **kwds)
-
+class ActionList(opi.ActionList):
     def _getInstance(self, node):
         actionsMap = {
-            "OPEN_FILE": OpenFileAction,
-            "OPEN_DISPLAY": OpenDisplayAction,
-            "OPEN_WEBPAGE": OpenWebpageAction,
-            "WRITE_PV": WritePvAction,
+            "open_file": OpenFileAction,
+            "open_display": OpenDisplayAction,
+            "open_webpage": OpenWebpageAction,
+            "write_pv": WritePvAction,
         }
 
         if node.attributes:
@@ -202,86 +196,19 @@ class ActionList(xom.List):
                     return obj
         raise ValueError("<{0}> Missing type attribute".format(node.nodeName))
 
-class Color(xom.Model):
-    red = xom.Integer(default=255, tagname="color", attrname="red")
-    green = xom.Integer(default=255, tagname="color", attrname="green")
-    blue = xom.Integer(default=255, tagname="color", attrname="blue")
+class Color(opi.Color):
+    pass
 
-class Macros(xom.Model):
-    """ Handles macros node, behaves as Python dictionary for easy access. """
+class Macros(opi.Macros):
+    pass
 
-    include_parent_macros = xom.Boolean(default=True)
-
-    def parse(self, node):
-        """ Detect dynamic named sub-nodes and make a dictionary of macros. """
-
-        super(Macros, self).parse(node)
-
-        child = node.firstChild
-        while child is not None:
-            if child.nodeType == xml.dom.Node.ELEMENT_NODE and child.nodeName != "include_parent_macros":
-                if len(child.childNodes) == 1 and child.childNodes[0].nodeType == xml.dom.Node.TEXT_NODE:
-                    self.setField(child.nodeName, child.childNodes[0].nodeValue)
-
-            child = child.nextSibling
-
-        return True
-
-    # Make this class dict-like
-
-    def __getitem__(self, name):    
-        return getattr(self, name)
-
-    def __iter__(self):
-        entities = self._entities.get(self.getTagName, [])
-        for fieldname,entity in entities:
-            if entity != "include_parent_macros":
-                yield entity
-
-    def keys(self):
-        return filter(lambda x: x != "include_parent_macros", self._entities)
-
-    def items(self):
-        d = self.toDict()
-        del d["include_parent_macros"]
-        return d.items()
-
-    def values(self):
-        return [ v for k,v in self.toDict().iteritems() if k != "include_parent_macros"]
-
-    @staticmethod
-    def replace(str, macros):
-        """ Replaces macros with their actual values in given string. """
-        for macro,value in macros.iteritems():
-            regex = re.compile("\$\({0}\)".format(macro), flags=re.MULTILINE)
-            str = re.sub(regex, value, str)
-        return str
-
-class Action(xom.Model):
-    """ Model for a single action. """
-    type = xom.String(tagname="__self__", attrname="type")
-    description = xom.String(default="")
-
-    def __init__(self, **kwds):
-        kwds["tagname"] = "action"
-        super(Action, self).__init__(**kwds)
-
-    def addMacros(self, macros):
-        """ Add all available macros to actions that need pass macros along.
-
-        This is a hook for actions that open new display and need to pass
-        macros to it. Derived classes should not use this hook for replace
-        existing macros, that is done by Converter.
-
-        Default is no action.
-        """
-        pass
+class Action(opi.Action):
+    pass
 
 class WritePvAction(Action):
     pv_name = xom.String()
     value = xom.String()
-    timeout = xom.Integer(default=10)
-    confirm_message = xom.String(default="")
+    description = xom.String(default="")
 
 class OpenPathAction(Action):
     path = xom.String()
@@ -295,7 +222,7 @@ class OpenPathAction(Action):
         return True
 
 class OpenDisplayAction(OpenPathAction):
-    mode = xom.Enum(["replace", "tab", "tab", "tab", "tab", "tab", "tab", "window", "window"], default=0)
+    target = xom.Enum(["replace", "tab", "window"])
     macros = Macros()
 
     def addMacros(self, macros):
@@ -315,53 +242,76 @@ class OpenDisplayAction(OpenPathAction):
             self.path += "&".join("{0}={1}".format(escape(k), escape(v)) for k,v in m.iteritems())
 
 class OpenFileAction(OpenPathAction):
-    pass
+    def __init__(self, **kwds):
+        super(OpenFileAction, self).__init__(**kwds)
+        self.path.setTagName("file", overwrite=True)
+        self.setField("path", self.path, "file")
 
 class OpenWebpageAction(OpenPathAction):
     def __init__(self, **kwds):
         super(OpenWebpageAction, self).__init__(**kwds)
-        self.path.setTagName("hyperlink", overwrite=True)
-        self.setField("path", self.path, "hyperlink")
+        self.path.setTagName("url", overwrite=True)
+        self.setField("path", self.path, "url")
 
 
 
 ##############################################################################
-### OPI widgets classes                                                    ###
+### BOB widgets classes                                                    ###
 ##############################################################################
+
+class Display(xom.Model):
+    """ Model for the main Display widget. """
+
+    actions = ActionList()
+    macros = Macros()
+    name = xom.String(default="")
+    widgets = WidgetList(tagname="widget", default=[])
+
+    def __init__(self, **kwds):
+        super(Display, self).__init__(tagname="display", **kwds)
+        self.setField("widget_type", "Display")
+
+    def getType(self):
+        return "Display"
+
+    def setParentMacros(self, macros):
+        """ Called from converter to recognize additional macros provided by parent. """
+        for action in self.actions:
+            action.addMacros(macros)
 
 class Widget(xom.Model):
     """ Base Widget model with common fields. """
 
-    widget_type = xom.String()
+    actions = ActionList()
     name = xom.String(default="")
     x = xom.Integer(default=0)
     y = xom.Integer(default=0)
-    width = xom.Integer(default=100)
-    height = xom.Integer(default=40)
-    actions = ActionList()
+    height = xom.Integer(default=-1)
+    width = xom.Integer(default=-1)
 
     def __init__(self, typeId=None, **kwds):
         self._typeId = (self.__class__.__name__ if typeId is None else typeId)
         super(Widget, self).__init__(**kwds)
+        self.setField("widget_type", self._typeId)
 
     @staticmethod
     def parseType(node):
         # Remap some container names to match code
         widgetMap = {
+            "action_button"    : "ActionButton",
+            "bool_button"      : "BoolButton",
             "checkbox"         : "CheckBox",
-            "groupingContainer": "GroupingContainer",
-            "linkingContainer" : "LinkingContainer",
+            "embedded"         : "Embedded",
+            "group"            : "Group",
+#            "label"            : "Label",
+#            "textupdate"       : "TextUpdate",
         }
 
         for key,value in node.attributes.items():
-            if key == "typeId":
-                if value.startswith("org.csstudio.opibuilder."):
-                    widgetType = value.split(".")[-1]
-                    return widgetMap.get(widgetType, widgetType)
-
-                raise ValueError("<{0}> Invalid attribute typeId {1}".format(node.nodeName, value))
+            if key == "type":
+                return widgetMap.get(value, value)
         else:
-            raise ValueError("<{0}> Missing attribute typeId".format(node.nodeName))
+            raise ValueError("<{0}> Missing attribute type".format(node.nodeName))
 
     def getType(self):
         return self._typeId
@@ -370,25 +320,108 @@ class Widget(xom.Model):
         """ Overloaded function makes sure we're parsing <widget> node. """
 
         typeId = Widget.parseType(node)
-        if self._typeId != typeId and self._typeId != "Widget":
-            raise ValueError("<{0}> Attribute typeId mismatch {1}!={2}".format(node.nodeName, typeId, self._typeId))
+        if self._typeId != typeId:
+            if self._typeId != "Widget":
+                raise ValueError("<{0}> Attribute type mismatch {1}!={2}".format(node.nodeName, typeId, self._typeId))
+            self._typeId = typeId
+            self.setField("widget_type", self._typeId)
 
         return super(Widget, self).parse(node)
 
     def setParentMacros(self, macros):
         """ Called from converter to recognize additional macros provided by parent. """
-        for action in self.actions:
-            action.addMacros(macros)
+        pass
 
-class Display(Widget):
-    """ Model for the main Display widget. """
-
+class ActionButton(Widget):
     background_color = Color()
-    widgets = WidgetList(tagname="widget", default=[])
-    macros = Macros()
+    enabled = xom.Boolean(default=True)
+    # font
+    foreground_color = Color()
+    height = xom.Integer(default=50)
+    horizontal_alignment = xom.Enum(HORIZONTAL_ALIGN, default=0)
+    push_action_index = xom.Integer(default=0)
+    pv_name = xom.String(default="")
+    pv_value = xom.String(default="")
+    rotation = xom.Enum(["0deg", "90deg", "180deg", "270deg"])
+    text = xom.String(default="")
+    tooltip = xom.String(default="")
+    visible = xom.Boolean(default=True)
+    width = xom.Integer(default=100)
 
-    def __init__(self, **kwds):
-        super(Display, self).__init__(typeId="Display", tagname="display", **kwds)
+class BoolButton(Widget):
+    alarm_border = xom.Boolean(default=True)
+    background_color = Color()
+    bit = xom.Integer(default=0)
+    enabled = xom.Boolean(default=True)
+    # font
+    foreground_color = Color()
+    height = xom.Integer(default=30)
+    labels_from_pv = xom.Boolean(default=False)
+    off_color = Color()
+    off_label = xom.String(default="")
+    on_color = Color()
+    on_label = xom.String(default="")
+    pv_name = xom.String(default="")
+    pv_value = xom.String(default="")
+    show_led = xom.Boolean(default=True)
+    tooltip = xom.String(default="")
+    visible = xom.Boolean(default=True)
+    width = xom.Integer(default=100)
+
+class CheckBox(Widget):
+    alarm_border = xom.Boolean(default=True)
+    bit = xom.Integer(default=0)
+    enabled = xom.Boolean(default=True)
+    # font
+    height = xom.Integer(default=20)
+    label = xom.String(default="")
+    pv_name = xom.String(default="")
+    pv_value = xom.String(default="")
+    tooltip = xom.String(default="")
+    visible = xom.Boolean(default=True)
+    width = xom.Integer(default=100)
+
+class Embedded(Widget):
+    enabled = xom.Boolean(default=True)
+    # font
+    height = xom.Integer(default=200)
+    group_name = xom.String(default="")
+    macros = Macros()
+    file = xom.String(default="")
+    resize = xom.Enum(["none","content","widget"])
+    tooltip = xom.String(default="")
+    visible = xom.Boolean(default=True)
+    width = xom.Integer(default=300)
+
+    def setParentMacros(self, macros):
+        """ Invoke base class function and also update opi_path field. """
+        super(Embedded, self).setParentMacros(macros)
+
+        m = {}
+        if self.macros.include_parent_macros:
+            m = dict(macros)
+        # Same macros defined in widget overwrite parent macros
+        for k,v in self.macros.items():
+            m[k] = Macros.replace(v, m)
+
+        if m and self.file:
+            # Turn into a query string
+            self.file += "?"
+            escape = tornado.escape.url_escape
+            self.file += "&".join("{0}={1}".format(escape(k), escape(v)) for k,v in m.iteritems())
+
+class Group(Widget):
+    background_color = Color()
+    enabled = xom.Boolean(default=True)
+    # font
+    foreground_color = Color()
+    height = xom.Integer(default=200)
+    macros = Macros()
+    style = xom.Enum(["group","title","border","none"])
+    tooltip = xom.String(default="")
+    visible = xom.Boolean(default=True)
+    widgets = WidgetList(tagname="widget", default=[])
+    width = xom.Integer(default=300)
 
 class TextUpdate(Widget):
     """ TextUpdate widget handler. """
@@ -450,56 +483,6 @@ class Label(Widget):
     vertical_alignment = xom.Enum(VERTICAL_ALIGN, default=0)
     visible = xom.Boolean(default=True)
     wrap_words = xom.Boolean(default=True)
-
-class ActionButton(Widget):
-    background_color = Color()
-    border_alarm_sensitive = xom.Boolean(default=False)
-    border_color = Color()
-    border_style = xom.Enum(BORDER_STYLES)
-    border_width = xom.Integer(default=0)
-    enabled = xom.Boolean(default=True)
-    # font
-    foreground_color = Color()
-    horizontal_alignment = xom.Enum(HORIZONTAL_ALIGN, default=0)
-    push_action_index = xom.Integer(default=0)
-    pv_name = xom.String(default="")
-    pv_value = xom.String(default="")
-    style = xom.Integer(default=0)
-    text = xom.String(default="")
-    toggle_button = xom.Boolean(default=False)
-    tooltip = xom.String(default="")
-    visible = xom.Boolean(default=True)
-
-class CheckBox(Widget):
-    background_color = Color()
-    bit = xom.Integer(default=0)
-    border_alarm_sensitive = xom.Boolean(default=False)
-    border_color = Color()
-    border_style = xom.Enum(BORDER_STYLES)
-    border_width = xom.Integer(default=0)
-    enabled = xom.Boolean(default=True)
-    # font
-    foreground_color = Color()
-    label = xom.String(default="")
-    pv_name = xom.String(default="")
-    pv_value = xom.String(default="")
-    tooltip = xom.String(default="")
-    visible = xom.Boolean(default=True)
-
-class GroupingContainer(Widget):
-    background_color = Color()
-    border_color = Color()
-    border_style = xom.Enum(BORDER_STYLES)
-    border_width = xom.Integer(default=0)
-    enabled = xom.Boolean(default=True)
-    # font
-    foreground_color = Color()
-    lock_children = xom.Boolean(default=False)
-    macros = Macros()
-    show_scrollbar = xom.Boolean(default=True)
-    tooltip = xom.String(default="")
-    visible = xom.Boolean(default=True)
-    widgets = WidgetList(tagname="widget", default=[])
 
 class LED(Widget):
     background_color = Color()
@@ -598,39 +581,6 @@ class LED(Widget):
         self.setField("states", states)
         return True
 
-class LinkingContainer(Widget):
-    background_color = Color()
-    border_color = Color()
-    border_style = xom.Enum(BORDER_STYLES)
-    border_width = xom.Integer(default=0)
-    enabled = xom.Boolean(default=True)
-    # font
-    foreground_color = Color()
-    group_name = xom.String(default="")
-    macros = Macros()
-    opi_file = xom.String(default="")
-    resize_behaviour = xom.Enum(["resize","fit","crop","scroll"])
-    tooltip = xom.String(default="")
-    visible = xom.Boolean(default=True)
-
-    def setParentMacros(self, macros):
-        """ Invoke base class function and also update opi_path field. """
-        super(LinkingContainer, self).setParentMacros(macros)
-
-        m = {}
-        if self.macros.include_parent_macros:
-            m = dict(macros)
-        # Same macros defined in widget overwrite parent macros
-        for k,v in self.macros.items():
-            m[k] = Macros.replace(v, m)
-
-        if m and self.opi_file:
-            # Turn into a query string
-            self.opi_file += "?"
-            escape = tornado.escape.url_escape
-            self.opi_file += "&".join("{0}={1}".format(escape(k), escape(v)) for k,v in m.iteritems())
-
-
 class TextInput(Widget):
     background_color = Color()
     border_alarm_sensitive = xom.Boolean(default=False)
@@ -676,35 +626,3 @@ class TextInput(Widget):
         self.setField("value_format", fmt)
 
         return True
-
-class BoolButton(Widget):
-    background_color = Color()
-    bit = xom.Integer(default=0)
-    border_alarm_sensitive = xom.Boolean(default=False)
-    border_color = Color()
-    border_style = xom.Enum(BORDER_STYLES)
-    border_width = xom.Integer(default=0)
-    confirm_message = xom.String(default="")
-    data_type = xom.Enum(["bit", "enum"])
-    enabled = xom.Boolean(default=True)
-    # font
-    foreground_color = Color()
-    labels_from_pv = xom.Boolean(default=False)
-    off_color = Color()
-    off_label = xom.String(default="")
-    off_state = xom.String(default="")
-    on_color = Color()
-    on_label = xom.String(default="")
-    on_state = xom.String(default="")
-    password = xom.String(default="")
-    push_action_index = xom.Integer(default=0)
-    pv_name = xom.String(default="")
-    pv_value = xom.String(default="")
-    released_action_index = xom.Integer(default=0)
-    show_boolean_label = xom.Boolean(default=True)
-    show_confirm_dialog = xom.Enum(["no","both","push","release"])
-    show_led = xom.Boolean(default=True)
-    square_button = xom.Boolean(default=False)
-    toggle_button = xom.Boolean(default=True)
-    tooltip = xom.String(default="")
-    visible = xom.Boolean(default=True)

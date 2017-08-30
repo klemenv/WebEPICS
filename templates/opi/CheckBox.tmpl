@@ -29,11 +29,11 @@
   </style>
   {% end %}
 
-  {% if border_alarm_sensitive %}
+  {% if border_alarm_sensitive and pv_name %}
   <div class="disconnected" data-map="js: elementSetVisible(element, %alarm.severity%==4)"></div>
   {% end %}
 
-  <div data-id="content" class="widget_body border{{unique_id}}_0" data-type="{{widget_type}}"
+  <div data-id="border" class="widget_body border{{unique_id}}_0" data-type="{{widget_type}}"
     data-map="{% if border_alarm_sensitive %}css: widget_body border_%alarm.severity% border{{unique_id}}_%alarm.severity%;{% end %}
               title: {{tooltip}};
              "
@@ -41,7 +41,7 @@
            height: calc(100% - {{max(4, 2*border_width if border_style.index!=0 else 0)}}px);
            white-space: nowrap;
           ">
-    <input type="checkbox" id="checkbox{{unique_id}}" 
+    <input type="checkbox" id="checkbox{{unique_id}}"
       data-map="js: element.prop('checked', (parseInt(%value%)>>{{bit}}) % 2 != 0);">
     <label for="checkbox{{unique_id}}">{{label}}</label>
   </div>

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" type="text/css" href="/static/webepics-bob.css">
+    <link rel="stylesheet" type="text/css" href="/static/jquery-ui.css">
+
+    <script src="/static/jquery.js"></script>
+    <script src="/static/jquery-ui.js"></script>
+    <script src="/static/webepics-opi.js"></script>
+    <script>
+        // URL of the WebSocket server
+        var ws_url = "$(WEBSOCKET_URL)";
+
+        $(function() {
+            $(document).tooltip();
+        });
+	</script>
+</head>
+
+<body>
+<div class="macros">
+    The predefined macros of Display:<br>
+    {% for key,value in macros.toDict().iteritems() %}
+      {% if key != "include_parent_macros" %}
+        {{key}}={{value}}<br>
+      {% end %}
+    {% end %}
+</div>
+<div style="position: fixed; top: 0px; left: 0px;">
+{% raw body %}
+</div>
+</body>
+</html>

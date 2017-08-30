@@ -30,7 +30,8 @@ default_cfg = {
         "use_cache": True,
         "files": { "path": "orig/" },
         "cache": { "path": "cache/" },
-        "opi": { "templates": "templates/opi/" }
+        "opi": { "templates": "templates/opi/" },
+        "bob": { "templates": "templates/bob/" }
     }
 }
 

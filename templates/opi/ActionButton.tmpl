@@ -30,12 +30,12 @@
   </style>
   {% end %}
 
-  {% if border_alarm_sensitive %}
+  {% if border_alarm_sensitive and pv_name %}
   <div class="disconnected" data-map="js: elementSetVisible(element, %alarm.severity%==4)"></div>
   {% end %}
 
   <div data-id="border"
-    {% if border_alarm_sensitive %}
+    {% if border_alarm_sensitive and pv_name %}
     data-map="css: widget_body border_%alarm.severity% border{{unique_id}}_%alarm.severity%"
     style="width: calc(100% - {{max(4, 2*border_width if border_style.index!=0 else 0)}}px);
            height: calc(100% - {{max(4, 2*border_width if border_style.index!=0 else 0)}}px);

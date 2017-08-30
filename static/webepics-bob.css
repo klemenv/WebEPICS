@@ -1,0 +1,96 @@
+.widget_wrap {
+    position: absolute;
+    display: inline-block;
+    border-width: 0px;
+    padding: 0px;
+    margin: 0px;
+}
+
+.widget_body {
+  top: 0px;
+  left: 0px;
+  padding: 0px;
+  margin: 0px;
+  overflow: hidden;
+}
+
+/* No alarm */
+.border_0 {
+  border: 0px;
+  padding: 2px;
+}
+
+/* Minor alarm */
+.border_1 {
+  border: 2px solid orange;
+  padding: 0px;
+}
+
+/* Major alarm */
+.border_2 {
+  border: 2px solid red;
+  padding: 0px;
+}
+
+/* Invalid alarm */
+.border_3 {
+  border: 2px solid magenta;
+  padding: 0px;
+}
+
+/* Undefined/disconnected alarm overlay */
+.disconnected::after {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  height: 100%;
+  width: 100%;
+  background-color: magenta;
+  padding: 0px;
+  border: 0px;
+  content: 'Disconnected';
+  overflow: hidden;
+  z-index: 1;
+  overflow: hidden;
+}
+
+.button {
+  box-shadow: rgb(255, 255, 255) 0px 1px 0px 0px inset;
+  background-color: rgb(240, 240, 240);
+  border-radius: 2px;
+  border: 1px solid rgb(200, 200, 200);
+  display: inline-block;
+  padding: 0px;
+  text-decoration: none;
+  text-align: center;
+  vertical-align: middle;
+  white-space: nowrap;
+  overflow: hidden;
+  outline: none;
+}
+.button:active {
+  box-shadow: rgb(155, 155, 155) 1px 1px 1px 1px inset;
+}
+
+.macros {
+  visibility: hidden;
+  position: relative;
+  padding: 10px;
+  color: black;
+  background-color: LightGrey;
+  border: 1px inset black;
+  z-index: 10;
+  margin: auto;
+  width: 350px;
+}
+
+.groupcontainer {
+  margin: 4px;
+  padding: 0px;
+}
+
+.groupcontainertitle {
+  position: absolute;
+  top: -10px;
+  left: 10px;
+}

@@ -82,21 +82,19 @@ $(document).ready(function() {
     }
 
     function processOnConnect() {
-        $("div[data-pv]").each(function() {
+        $("[data-pv!=''][data-pv]").each(function() {
             var pv = $(this).data("pv");
 
-            if (pv.length > 0) {
-                // When no protocol is specified, default to CA
-                if (pv.split("://").length == 1)
-                    pv = "ca://" + pv;
+            // When no protocol is specified, default to CA
+            if (pv.split("://").length == 1)
+                pv = "ca://" + pv;
 
-                var req = {
-                    pv: pv,
-                    req: "pv_subscribe"
-                };
-                wsHandle.send(JSON.stringify(req));
-                if (debug) console.log("Sent: " + JSON.stringify(req));
-            }
+            var req = {
+                pv: pv,
+                req: "pv_subscribe"
+            };
+            wsHandle.send(JSON.stringify(req));
+            if (debug) console.log("Sent: " + JSON.stringify(req));
         });
     }
 
@@ -109,7 +107,6 @@ $(document).ready(function() {
     }
 
     function processPvUpdate(rsp) {
-        var update = rsp;
         if (rsp.pv in cachedPVs) {
             $.extend(cachedPVs[rsp.pv], rsp);
             update = cachedPVs[rsp.pv];
@@ -121,7 +118,7 @@ $(document).ready(function() {
         // use it's index, otherwise match the value.
         if ("valueEnum" in rsp) {
             rsp.valueNum = rsp.valueEnum.index;
-        } else if ($.isNumeric(rsp.value)) {
+        } else if (typeof rsp.value === "number") {
             rsp.valueNum = rsp.value;
         } else {
             rsp.valueNum = -1;
@@ -129,14 +126,14 @@ $(document).ready(function() {
 
         // Select all widgets subscribed to this PV and apply mapped actions on sub-elements
         $("[data-pv='" + rsp.pv + "'] *[data-map]").each(function() {
-            elementProcessMapping($(this), update);
+            elementProcessMapping($(this), rsp);
         });
 
         // Backward compatibility when protocol was not part of PV url
         if (rsp.pv.split("://")[0] == "ca") {
             var pv = rsp.pv.split("://")[1];
             $("[data-pv='" + pv + "'] *[data-map]").each(function() {
-                elementProcessMapping($(this), update);
+                elementProcessMapping($(this), rsp);
             });
         }
     }

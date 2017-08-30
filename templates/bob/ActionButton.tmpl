@@ -1,0 +1,60 @@
+<div data-pv="{{pv_name}}" class="widget_wrap" style="
+  top: {{y-2}}px;
+  left: {{x-2}}px;
+  {% if width != -1 %}width: {{width+4}}px;{% end %}
+  {% if height != -1 %}height: {{height+4}}px;{% end %}
+  ">
+
+  {% if pv_name %}
+  <div class="disconnected" data-map="js: elementSetVisible(element, %alarm.severity%==4)"></div>
+  {% end %}
+
+  <div data-id="border" class="border_0"
+    {% if pv_name %}data-map="css: widget_body border_%alarm.severity%"{% else %}class="border_0"{% end %}
+    style="{% if width != -1 %}width: 100%;{% end %}
+           {% if height != -1 %}height: 100%;{% end %}
+           display: inline-block;"
+    >
+
+    <button type="button" class="button"
+      data-map="title: {{tooltip}}"
+      data-action="
+        {% for action in actions %}
+          {% if action.type in [ "open_webpage", "open_file" ] %}
+            window.location.href = '{{action.path}}';
+            {% break %}
+          {% elif action.type in "open_display" %}
+            {% if action.target == "replace" %}
+              window.location = '{{action.path}}';
+            {% else %}
+              window.open('{{action.path}}', '_blank');
+            {% end %}
+            {% break %}
+          {% elif action.type in "write_pv" %}
+            setPvValue('{{action.pv_name}}', '{{action.value}}');
+          {% end %}
+        {% end %}
+      "
+      style="{% if width != -1 %}width: {{width}}px;{% end %}
+             {% if height != -1 %}height: {{height}}px;{% end %}
+             top: 2px;
+             left: 2px;
+             background-color: rgb({{background_color.red}},{{background_color.green}},{{background_color.blue}});
+            ">
+      {{text}}
+    </button>
+
+    <!--
+    Actions:
+    {% for action in actions %}
+      {% if action.type == "OPEN_DISPLAY" %}
+        Open: {{action.path}}
+      {% elif action.type == "WRITE_PV" %}
+        Write PV: {{action.pv_name}}={{action.value}}
+      {% end %}
+    {% end %}
+    //-->
+
+  </div>
+
+</div>

@@ -1,0 +1,18 @@
+<div class="widget_wrap" style="
+  top: {{y}}px;
+  left: {{x}}px;
+  {% if width != -1 %}width: {{width}}px;{% end %}
+  {% if height != -1 %}height: {{height}}px;{% end %}">
+
+  <div class="widget_body" data-id="content" data-type="{{widget_type}}"
+    style="border: 2px solid magenta;
+           {% if height != -1 %}width: calc(100% - 4px);{% end %}
+           {% if width != -1 %}height: calc(100% - 4px);{% end %}
+           text-align: left;
+           vertical-align: top;
+           white-space: nowrap;
+           overflow: hidden;
+          ">
+    <span>Unsupported widget <i>{{widget_type}}</i></span>
+  </div>
+</div>
