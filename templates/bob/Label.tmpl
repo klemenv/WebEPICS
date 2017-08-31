@@ -7,8 +7,8 @@
 
   <div class="widget_body" data-id="content" data-type="{{widget_type}}"
     data-map="title: {{tooltip}}"
-    style="width: 100%;
-           height: 100%;
+    style="{% if width != -1 %}width: {{width}}px;{% end %}
+           {% if height != -1 %}height: {{height}}px;{% end %}
            text-align: {{horizontal_alignment}};
            vertical-align: {{vertical_alignment}};
            background-color: rgb({{background_color.red}},{{background_color.green}},{{background_color.blue}});

@@ -340,7 +340,7 @@ class List(Field):
             except Exception, e:
                 pass
 
-        return False
+        return not self._flat
 
     def _getInstance(self, classname):
         raise ValueError("<{0}> Class '{1}' not implemented".format(node.nodeName, classname))

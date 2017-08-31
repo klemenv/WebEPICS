@@ -30,7 +30,7 @@
   <div class="disconnected" data-map="js: elementSetVisible(element, %alarm.severity%==4)"></div>
   {% end %}
 
-  <div data-id="border"
+  <div data-id="border" class="widget_body {% if not alarm_border %}border_0{% end %}" data-type="{{widget_type}}"
     {% if alarm_border and pv_name %}data-map="css: widget_body border_%alarm.severity%"{% else %}class="border_0"{% end %}
     style="{% if width != -1 %}width: {{width}}px;{% end %}
            {% if height != -1 %}height: {{height}}px;{% end %}
@@ -39,7 +39,7 @@
            display: inline-block;"
     >
 
-    <button type="button" class="button" 
+    <button type="button" class="button button{{unique_id}}_off" 
       data-map="title: {{tooltip}};
                 js: element.removeClass().addClass( ((%valueNum%>>{{bit}}) % 2 != 0) ? 'button button{{unique_id}}_on' : 'button button{{unique_id}}_off');
       "
@@ -52,7 +52,7 @@
     </button>
 
     {% if show_led %}
-    <div data-id="led"
+    <div data-id="led" class="led{{unique_id}}_off"
       data-map="js: element.removeClass().addClass( ((%valueNum%>>{{bit}}) % 2 != 0) ? 'led{{unique_id}}_on' : 'led{{unique_id}}_off')"
       style="width: 15px;
              height: 15px;

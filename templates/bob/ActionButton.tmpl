@@ -11,8 +11,8 @@
 
   <div data-id="border" class="border_0"
     {% if pv_name %}data-map="css: widget_body border_%alarm.severity%"{% else %}class="border_0"{% end %}
-    style="{% if width != -1 %}width: 100%;{% end %}
-           {% if height != -1 %}height: 100%;{% end %}
+    style="{% if width != -1 %}width: {{width}}px;{% end %}
+           {% if height != -1 %}height: {{height}}px;{% end %}
            display: inline-block;"
     >
 

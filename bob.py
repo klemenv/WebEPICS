@@ -107,11 +107,11 @@ class Converter:
         macros["pv_name"] = widget.pv_name if "pv_name" in dir(widget) else ""
         macros["pv_value"] = "%value%"
         if len(widget.actions) == 0:
-             macros["actions"] = "no action"
+            macros["actions"] = "no action"
         elif len(widget.actions) == 1:
-             macros["actions"] = widget.actions[0].description
+            macros["actions"] = widget.actions[0].description
         else:
-             macros["actions"] = "{0} actions".format(len(widget.actions))
+            macros["actions"] = "{0} actions".format(len(widget.actions))
         html = self.replaceMacros(html, macros)
 
         # At this point all hard-coded macros have been replaced and can be
@@ -203,12 +203,11 @@ class Macros(opi.Macros):
     pass
 
 class Action(opi.Action):
-    pass
+    description = xom.String(default="")
 
 class WritePvAction(Action):
     pv_name = xom.String()
     value = xom.String()
-    description = xom.String(default="")
 
 class OpenPathAction(Action):
     path = xom.String()
@@ -224,6 +223,11 @@ class OpenPathAction(Action):
 class OpenDisplayAction(OpenPathAction):
     target = xom.Enum(["replace", "tab", "window"])
     macros = Macros()
+
+    def __init__(self, **kwds):
+        super(OpenDisplayAction, self).__init__(**kwds)
+        self.path.setTagName("file", overwrite=True)
+        self.setField("path", self.path, "file")
 
     def addMacros(self, macros):
         """ Overloaded method formats path field as URL and includes macros in query string. """
@@ -340,13 +344,12 @@ class ActionButton(Widget):
     enabled = xom.Boolean(default=True)
     # font
     foreground_color = Color(default={"red":0, "green":0, "blue":0})
-    height = xom.Integer(default=50)
+    height = xom.Integer(default=30)
     horizontal_alignment = xom.Enum(HORIZONTAL_ALIGN, default=0)
-    push_action_index = xom.Integer(default=0)
     pv_name = xom.String(default="")
     pv_value = xom.String(default="")
     rotation = xom.Enum(["0deg", "90deg", "180deg", "270deg"])
-    text = xom.String(default="")
+    text = xom.String(default="$(actions)")
     tooltip = xom.String(default="")
     visible = xom.Boolean(default=True)
     width = xom.Integer(default=100)
@@ -360,10 +363,10 @@ class BoolButton(Widget):
     foreground_color = Color(default={"red":0, "green":0, "blue":0})
     height = xom.Integer(default=30)
     labels_from_pv = xom.Boolean(default=False)
-    off_color = Color()
-    off_label = xom.String(default="")
-    on_color = Color()
-    on_label = xom.String(default="")
+    off_color = Color(default={"red":60, "green":100, "blue":60})
+    off_label = xom.String(default="OFF")
+    on_color = Color(default={"red":60, "green":255, "blue":60})
+    on_label = xom.String(default="ON")
     pv_name = xom.String(default="")
     pv_value = xom.String(default="")
     show_led = xom.Boolean(default=True)
@@ -494,7 +497,7 @@ class TextEntry(Widget):
     height = xom.Integer(default=20)
     # font
     foreground_color = Color(default={"red":0, "green":0, "blue":0})
-    format_type = xom.Enum(FORMAT_TYPES)
+    format_type = xom.Enum(FORMAT_TYPES, tagname="format")
     multi_line = xom.Boolean(default=False)
     precision = xom.Integer(default=-1)
     pv_name = xom.String(default="")
@@ -526,7 +529,7 @@ class TextUpdate(Widget):
     background_color = Color(default={"red":240, "green":240, "blue":240})
     # font
     foreground_color = Color(default={"red":0, "green":0, "blue":0})
-    format_type = xom.Enum(FORMAT_TYPES)
+    format_type = xom.Enum(FORMAT_TYPES, tagname="format")
     height = xom.Integer(default=20)
     horizontal_alignment = xom.Enum(HORIZONTAL_ALIGN)
     precision = xom.Integer(default=-1)
