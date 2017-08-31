@@ -303,8 +303,11 @@ class Widget(xom.Model):
             "checkbox"         : "CheckBox",
             "embedded"         : "Embedded",
             "group"            : "Group",
-#            "label"            : "Label",
-#            "textupdate"       : "TextUpdate",
+            "label"            : "Label",
+            "led"              : "LED",
+            "multi_state_led"  : "MultiStateLED",
+            "textentry"        : "TextEntry",
+            "textupdate"       : "TextUpdate",
         }
 
         for key,value in node.attributes.items():
@@ -333,10 +336,10 @@ class Widget(xom.Model):
         pass
 
 class ActionButton(Widget):
-    background_color = Color()
+    background_color = Color(default={"red":210, "green":210, "blue":210})
     enabled = xom.Boolean(default=True)
     # font
-    foreground_color = Color()
+    foreground_color = Color(default={"red":0, "green":0, "blue":0})
     height = xom.Integer(default=50)
     horizontal_alignment = xom.Enum(HORIZONTAL_ALIGN, default=0)
     push_action_index = xom.Integer(default=0)
@@ -350,11 +353,11 @@ class ActionButton(Widget):
 
 class BoolButton(Widget):
     alarm_border = xom.Boolean(default=True)
-    background_color = Color()
+    background_color = Color(default={"red":210, "green":210, "blue":210})
     bit = xom.Integer(default=0)
     enabled = xom.Boolean(default=True)
     # font
-    foreground_color = Color()
+    foreground_color = Color(default={"red":0, "green":0, "blue":0})
     height = xom.Integer(default=30)
     labels_from_pv = xom.Boolean(default=False)
     off_color = Color()
@@ -411,10 +414,10 @@ class Embedded(Widget):
             self.file += "&".join("{0}={1}".format(escape(k), escape(v)) for k,v in m.iteritems())
 
 class Group(Widget):
-    background_color = Color()
+    background_color = Color(default={"red":255, "green":255, "blue":255})
     enabled = xom.Boolean(default=True)
     # font
-    foreground_color = Color()
+    foreground_color = Color(default={"red":0, "green":0, "blue":0})
     height = xom.Integer(default=200)
     macros = Macros()
     style = xom.Enum(["group","title","border","none"])
@@ -423,42 +426,94 @@ class Group(Widget):
     widgets = WidgetList(tagname="widget", default=[])
     width = xom.Integer(default=300)
 
-class TextUpdate(Widget):
-    """ TextUpdate widget handler. """
-
-    background_color = Color()
-    border_alarm_sensitive = xom.Boolean(default=False)
-    border_color = Color()
-    border_style = xom.Enum(BORDER_STYLES)
-    border_width = xom.Integer(default=0)
-    foreground_color = Color()
-    format_type = xom.Integer(default=0)
-    horizontal_alignment = xom.Enum(HORIZONTAL_ALIGN)
-    precision = xom.Integer(default=0)
-    precision_from_pv = xom.Boolean(default=True)
-    pv_name = xom.String(default="")
-    pv_value = xom.String(default="")
-    show_units = xom.Boolean(default=True)
+class Label(Widget):
+    background_color = Color(default={"red":255, "green":255, "blue":255})
+    # font
+    foreground_color = Color(default={"red":0, "green":0, "blue":0})
+    height = xom.Integer(default=20)
+    horizontal_alignment = xom.Enum(HORIZONTAL_ALIGN, default=0)
+    rotation = xom.Enum(["0deg", "90deg", "180deg", "270deg"])
     text = xom.String(default="")
     tooltip = xom.String(default="")
     transparent = xom.Boolean(default=False)
-    vertical_alignment = xom.Enum(VERTICAL_ALIGN)
+    vertical_alignment = xom.Enum(VERTICAL_ALIGN, default=0)
     visible = xom.Boolean(default=True)
     wrap_words = xom.Boolean(default=True)
+    width = xom.Integer(default=100)
+
+class LED(Widget):
+    alarm_border = xom.Boolean(default=False)
+    bit = xom.Integer(default=0)
+    enabled = xom.Boolean(default=True)
+    #font
+    foreground_color = Color(default={"red":0, "green":0, "blue":0})
+    height = xom.Integer(default=20)
+    labels_from_pv = xom.Boolean(default=False)
+    off_label = xom.String(default="")
+    off_color = Color(default={"red":60, "green":100, "blue":60})
+    on_label = xom.String(default="")
+    on_color = Color(default={"red":60, "green":255, "blue":60})
+    pv_name = xom.String(default="")
+    pv_value = xom.String(default="")
+    square = xom.Boolean(default=False)
+    tooltip = xom.String(default="")
+    visible = xom.Boolean(default=True)
+    width = xom.Integer(default=20)
+
+class MultiStateLEDList(xom.List):
+    def __init__(self, **kwds):
+        super(MultiStateLEDList, self).__init__(False, **kwds)
+
+    def _getInstance(self, node):
+
+        class LEDState(xom.Model):
+            value = xom.Number(default=0)
+            label = xom.String(default="")
+            color = Color()
+
+        state = LEDState(tagname="state")
+        state.parse(node)
+        return state
+
+class MultiStateLED(Widget):
+    alarm_border = xom.Boolean(default=False)
+    #font
+    foreground_color = Color(default={"red":0, "green":0, "blue":0})
+    height = xom.Integer(default=20)
+    pv_name = xom.String(default="")
+    pv_value = xom.String(default="")
+    square = xom.Boolean(default=False)
+    states = MultiStateLEDList()
+    tooltip = xom.String(default="")
+    visible = xom.Boolean(default=True)
+    width = xom.Integer(default=20)
+
+class TextEntry(Widget):
+    alarm_border = xom.Boolean(default=True)
+    background_color = Color(default={"red":128, "green":255, "blue":255})
+    height = xom.Integer(default=20)
+    # font
+    foreground_color = Color(default={"red":0, "green":0, "blue":0})
+    format_type = xom.Enum(FORMAT_TYPES)
+    multi_line = xom.Boolean(default=False)
+    precision = xom.Integer(default=-1)
+    pv_name = xom.String(default="")
+    pv_value = xom.String(default="")
+    show_units = xom.Boolean(default=True)
+    tooltip = xom.String(default="")
+    visible = xom.Boolean(default=True)
+    width = xom.Integer(default=100)
+    wrap_words = xom.Boolean(default=False)
 
     def parse(self, node):
-        done = super(TextUpdate, self).parse(node)
+        done = super(TextEntry, self).parse(node)
 
-        if self.precision_from_pv:
-            fmt = None
+        if self.precision == -1:
+            fmt = "%s"
         else:
-            try:
-                fmt = FORMAT_TYPES[self.format_type]
-            except:
-                fmt = FORMAT_TYPES[0]
-
+            fmt = self.format_type.get()
             precision = self.precision
-            if self.format_type == 5:
+            if self.format_type.index == 5:
                 precision = 8
 
             fmt = fmt.format(precision)
@@ -466,163 +521,38 @@ class TextUpdate(Widget):
 
         return done
 
-class Label(Widget):
-    """ Label widget handler. """
-
-    background_color = Color()
-    border_color = Color()
-    border_style = xom.Enum(BORDER_STYLES)
-    border_width = xom.Integer(default=0)
-    enabled = xom.Boolean(default=True)
+class TextUpdate(Widget):
+    alarm_border = xom.Boolean(default=True)
+    background_color = Color(default={"red":240, "green":240, "blue":240})
     # font
-    foreground_color = Color()
-    horizontal_alignment = xom.Enum(HORIZONTAL_ALIGN, default=0)
-    text = xom.String(default="")
+    foreground_color = Color(default={"red":0, "green":0, "blue":0})
+    format_type = xom.Enum(FORMAT_TYPES)
+    height = xom.Integer(default=20)
+    horizontal_alignment = xom.Enum(HORIZONTAL_ALIGN)
+    precision = xom.Integer(default=-1)
+    pv_name = xom.String(default="")
+    pv_value = xom.String(default="")
+    rotation = xom.Enum(["0deg", "90deg", "180deg", "270deg"])
+    show_units = xom.Boolean(default=True)
     tooltip = xom.String(default="")
     transparent = xom.Boolean(default=False)
-    vertical_alignment = xom.Enum(VERTICAL_ALIGN, default=0)
+    vertical_alignment = xom.Enum(VERTICAL_ALIGN)
     visible = xom.Boolean(default=True)
+    width = xom.Integer(default=100)
     wrap_words = xom.Boolean(default=True)
 
-class LED(Widget):
-    background_color = Color()
-    bit = xom.Integer(default=0)
-    border_alarm_sensitive = xom.Boolean(default=False)
-    border_color = Color()
-    border_style = xom.Enum(BORDER_STYLES)
-    border_width = xom.Integer(default=0)
-    data_type = xom.Enum(["bit", "enum"])
-    enabled = xom.Boolean(default=True)
-    #font
-    foreground_color = Color()
-    pv_name = xom.String(default="")
-    pv_value = xom.String(default="")
-    show_boolean_label = xom.Boolean(default=False)
-    square_led = xom.Boolean(default=False)
-    state_count = xom.Integer(default=2)
-    tooltip = xom.String(default="")
-    visible = xom.Boolean(default=True)
-
     def parse(self, node):
-        """ Turn LED XML nodes into a list of states.
+        done = super(TextUpdate, self).parse(node)
 
-        Handles multi-LED and 2-LED cases. Dynamically adds state_count and
-        states fields to this Model. states field is sorted list of Models
-        containing sub-fields value,color,label for each state.
-        """
-        super(LED, self).parse(node)
-
-        class LEDState(xom.Model):
-            value = xom.Number()
-            label = xom.String(default="")
-            color = Color()
-
-            def parse(self, node):
-                pass
-
-        # Read number of total states, default to 2 for off/on LED
-        count = xom.Integer(tagname="state_count", default=2)
-        child = node.firstChild
-        while child is not None:
-            if child.nodeName == "state_count":
-                count.parse(child)
-                break
-            child = child.nextSibling
-        self.setField("state_count", count.get())
-
-        # Create a list of all state models
-        states = []
-        for i in range(self.state_count):
-            state = LEDState()
-            states.append(state)
-
-        # Parse nodes describing states - handles 2 state LED as well as n-state LED
-        child = node.firstChild
-        while child is not None:
-            try:
-                check, fieldname, i = child.nodeName.split("_")
-                i = int(i)
-                if check == "state":
-                    if fieldname == "color":
-                        states[i].color.setTagName(child.nodeName, True)
-                        states[i].color.parse(child)
-                    elif fieldname == "label":
-                        states[i].label.setTagName(child.nodeName, True)
-                        states[i].label.parse(child)
-                    elif fieldname == "value":
-                        states[i].value.setTagName(child.nodeName, True)
-                        states[i].value.parse(child)
-            except:
-                if child.nodeName == "off_color":
-                    states[0].color.setTagName(child.nodeName, True)
-                    states[0].color.parse(child)
-                    states[0].value.setDefault(0)
-                elif child.nodeName == "off_label":
-                    states[0].label.setTagName(child.nodeName, True)
-                    states[0].label.parse(child)
-                    states[0].value.setDefault(0)
-                elif child.nodeName == "on_color":
-                    states[1].color.setTagName(child.nodeName, True)
-                    states[1].color.parse(child)
-                    states[1].value.setDefault(1)
-                elif child.nodeName == "on_label":
-                    states[1].label.setTagName(child.nodeName, True)
-                    states[1].label.parse(child)
-                    states[1].value.setDefault(1)
-
-            child = child.nextSibling
-
-        # Transform fields into Python objects
-        for i in range(self.state_count):
-            states[i].setField("label", states[i].label.get())
-            states[i].setField("value", states[i].value.get())
-
-        # Assign 'states' field
-        self.setField("states", states)
-        return True
-
-class TextInput(Widget):
-    background_color = Color()
-    border_alarm_sensitive = xom.Boolean(default=False)
-    border_color = Color()
-    border_style = xom.Enum(BORDER_STYLES)
-    border_width = xom.Integer(default=0)
-    enabled = xom.Boolean(default=True)
-    #font
-    foreground_color = Color()
-    format_type = xom.Integer(default=0)
-    horizontal_alignment = xom.Enum(HORIZONTAL_ALIGN)
-    limits_from_pv = xom.Boolean(default=False)
-    maximum = xom.Number(default=100)
-    minimum = xom.Number(default=0)
-    multiline_input = xom.Boolean(default=False)
-    precision = xom.Integer(default=0)
-    precision_from_pv = xom.Boolean(default=True)
-    pv_name = xom.String(default="")
-    pv_value = xom.String(default="")
-    selector_type = xom.Enum(["none","file","datetime"])
-    show_units = xom.Boolean(default=True)
-    text = xom.String(default="")
-    tooltip = xom.String(default="")
-    transparent = xom.Boolean(default=False)
-    visible = xom.Boolean(default=True)
-
-    def parse(self, node):
-        super(TextInput, self).parse(node)
-
-        if self.precision_from_pv:
-            fmt = None
+        if self.precision == -1:
+            fmt = "%s"
         else:
-            try:
-                fmt = FORMAT_TYPES[self.format_type]
-            except:
-                fmt = FORMAT_TYPES[0]
-
+            fmt = self.format_type.get()
             precision = self.precision
-            if self.format_type == 5:
+            if self.format_type.index == 5:
                 precision = 8
 
             fmt = fmt.format(precision)
         self.setField("value_format", fmt)
 
-        return True
+        return done

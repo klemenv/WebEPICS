@@ -165,18 +165,18 @@ class Field(Entity):
     """ Represents single value XML node. """
 
     _attrname = None
+    _default = None
 
     def __init__(self, **kwds):
         if "default" in kwds:
             # Set default value, make field optional
-            self._value = kwds["default"]
+            self._default = kwds["default"]
         if "attrname" in kwds:
             self._attrname = kwds["attrname"]
         super(Field, self).__init__(**kwds)
 
     def setDefault(self, value):
-        if "_value" not in dir(self):
-            self._value = value
+        self._default = value
 
     def isValid(self):
         try:
@@ -186,10 +186,11 @@ class Field(Entity):
             return False
 
     def get(self):
-        try:
+        if "_value" in dir(self):
             return self._value
-        except AttributeError:
-            raise AttributeError("[{0}] Missing required value".format(self._tagname))
+        if self._default is not None:
+            return self._default
+        raise AttributeError("[{0}] Missing required value".format(self._tagname))
 
     def parse(self, node):
 
@@ -280,10 +281,10 @@ class Enum(Field):
         super(Enum, self).__init__(**kwds)
 
     def __repr__(self):
-        return self._value
+        return super(Enum, self).get()
 
     def __cmp__(self, other):
-        return  0 if (self._value == other or self.index == other) else 1
+        return 0 if (super(Enum, self).get() == other or self.index == other) else 1
 
     def get(self):
         return self
@@ -302,11 +303,13 @@ class Enum(Field):
 class List(Field):
     def __init__(self, flat, **kwds):
         self._flat = flat
+        self._value = []
         kwds["default"] = []
         super(List, self).__init__(**kwds)
 
     def __iter__(self):
-        for elem in self._value:
+        values = self.get()
+        for elem in values:
             yield elem
 
     def parse(self, node, tagname=None):

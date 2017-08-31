@@ -36,14 +36,16 @@
 
   <div data-id="border"
     {% if border_alarm_sensitive and pv_name %}
+    {% set div_border_width=(width - max(4, 2*border_width if border_style.index!=0 else 0)) %}
     data-map="css: border_%alarm.severity% border{{unique_id}}_%alarm.severity%"
-    style="width: calc(100% - {{max(4, 2*border_width if border_style.index!=0 else 0)}}px);
-           height: calc(100% - {{max(4, 2*border_width if border_style.index!=0 else 0)}}px);
+    style="width: {{div_border_width}}px;
+           height: {{div_border_width}}px;
            display: inline-block;"
     {% else %}
+    {% set div_border_width=(width - (2*border_width if border_style.index!=0 else 0)) %}
     class="border{{unique_id}}_0"
-    style="width: calc(100% - {{2*border_width if border_style.index!=0 else 0}}px);
-           height: calc(100% - {{2*border_width if border_style.index!=0 else 0}}px);
+    style="width: {{div_border_width}}px;
+           height: {{div_border_width}}px;
            display: inline-block;"
     {% end %}
     >
@@ -51,10 +53,11 @@
     {% for state in states %}
     <div data-id="content" class="widget_body" data-type="{{widget_type}}"
       data-map="js: elementSetVisible(element, [%value%, %valueEnum.index%].includes({{state.value}})); title: {{tooltip}}"
-      style="width: calc(100%);
-             height: calc(100%);
+      style="width: {{div_border_width - 4}}px;
+             height: {{div_border_width - 4}}px;
              top: {{max(2 if border_alarm_sensitive else 0, border_width if border_style.index!=0 else 0)}}px;
              left: {{max(2 if border_alarm_sensitive else 0, border_width if border_style.index!=0 else 0)}}px;
+             border: 2px solid grey;
              background-color: rgb({{state.color.red}},{{state.color.green}},{{state.color.blue}});
              white-space: nowrap;
              {% if not square_led %}border-radius: 50%{% end %}

@@ -1,0 +1,35 @@
+<div data-pv="{{pv_name}}" class="widget_wrap" style="
+  top: {{y-2}}px;
+  left: {{x-2}}px;
+  {% if width != -1 %}width: {{width+4}}px;{% end %}
+  {% if height != -1 %}height: {{height+4}}px;{% end %}
+  ">
+
+  {% if pv_name %}
+  <div class="disconnected" data-map="js: elementSetVisible(element, %alarm.severity%==4)"></div>
+  {% end %}
+
+  {% if multi_line %}
+  <textarea data-id="input" wrap="soft"
+  {% else %}
+  <input data-id="input"
+         autocomplete="off" {% if not enabled %}disabled{% end %} value="{{pv_name}}"
+  {% end %}
+    class="widget_body {% if not alarm_border %}border_0{% end %}" data-type="{{widget_type}}"
+    data-map="{% if alarm_border and pv_name %}css: widget_body border_%alarm.severity%;{% end %}
+              {% if precision == -1 %}format: %display.format%;{% end %}
+              {% if show_units %}units: %display.units%;{% end %}
+              value: %value%;
+              title: {{tooltip}};"
+    style="{% if width != -1 %}width: {{width}}px;{% end %}
+           {% if height != -1 %}height: {{height}}px;{% end %}
+           top: 0px;
+           left: 0px;
+           background-color: rgb({{background_color.red}},{{background_color.green}},{{background_color.blue}});
+           {% if not wrap_words %}white-space: nowrap;{% end %}
+          ">
+  {% if multi_line %}
+  {{pv_name}}</textarea>
+  {% end %}
+
+</div>

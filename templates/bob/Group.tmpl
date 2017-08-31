@@ -1,0 +1,26 @@
+<div class="widget_wrap groupcontainer" style="
+  top: {{y}}px;
+  left: {{x}}px;
+  width: {{width - 10}}px;
+  height: {{height - 10}}px;
+  {% if style != 'none' %}border: 1px groove grey;{% end %}
+  ">
+
+  {% if style == "group" %}
+  <div class="groupcontainertitle"
+    style="background-color: rgb({{background_color.red}},{{background_color.green}},{{background_color.blue}});
+           
+          ">
+  {{name}}
+  </div>
+  {% end %}
+
+  <div id="widget_body" 
+    style="position: absolute;
+           top: 10px;
+           left: 10px;
+           background-color: rgb({{background_color.red}},{{background_color.green}},{{background_color.blue}});
+          ">
+  {% raw body %}
+  </div>
+</div>

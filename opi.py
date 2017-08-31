@@ -207,6 +207,14 @@ class Color(xom.Model):
     green = xom.Integer(default=255, tagname="color", attrname="green")
     blue = xom.Integer(default=255, tagname="color", attrname="blue")
 
+    def __init__(self, **kwds):
+        if "default" in kwds:
+            self.red.setDefault(kwds["default"]["red"])
+            self.green.setDefault(kwds["default"]["green"])
+            self.blue.setDefault(kwds["default"]["blue"])
+            del kwds["default"]
+        super(Color, self).__init__(**kwds)
+
 class Macros(xom.Model):
     """ Handles macros node, behaves as Python dictionary for easy access. """
 

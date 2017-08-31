@@ -109,7 +109,7 @@ $(document).ready(function() {
     function processPvUpdate(rsp) {
         if (rsp.pv in cachedPVs) {
             $.extend(cachedPVs[rsp.pv], rsp);
-            update = cachedPVs[rsp.pv];
+            rsp = cachedPVs[rsp.pv];
         } else {
             cachedPVs[rsp.pv] = rsp;
         }
